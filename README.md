@@ -1,5 +1,7 @@
 # Acompañamiento SED · Encuesta de Clima de Aula (2026)
 
+**Sitio:** https://oscarmdiazb.github.io/acompanamiento-clima-aula/
+
 Página para que el personal de la SED **se apunte** a acompañar las aplicaciones de la
 encuesta. La SED pidió que a cada aplicación asista una persona suya. Son cientos de
 funcionarios y ~110 visitas: repartirlas a mano no es viable, así que cada quien escoge.
@@ -79,8 +81,11 @@ mantenerlo así, aquí y en la página.
 
 ## Publicar
 
-Repo propio, GitHub Pages, con el skill `github-oscar`. No mezclar con el repo de reservas:
-la idea es que este aplicativo se pueda tumbar o rehacer sin tocar el operativo.
+Repo propio (`oscarmdiazb/acompanamiento-clima-aula`), GitHub Pages desde `main` en la raíz.
+Para actualizar: `git push`, y en un minuto el sitio se reconstruye solo.
+
+No se mezcla con el repo de reservas (`clima2026`) a propósito: así este aplicativo se puede
+tumbar o rehacer sin tocar el operativo, que está en campo hasta el 30 de octubre de 2026.
 
 ## Probar en local
 
@@ -92,7 +97,7 @@ python3 -m http.server 8793 --directory acompanamiento-sed-2026
 
 ## Pendientes
 
-1. **Publicar** el repo y mandar el enlace a la SED.
+1. **Mandar el enlace a la SED** con una instrucción corta de una línea.
 2. **Empujar los huecos**: `huecos.sh` dice qué falta. Falta decidir quién persigue y cada
    cuánto — un correo semanal con las visitas sin acompañante sería lo natural.
 3. Un panel interno con las estadísticas por dependencia, si la SED lo pide.
