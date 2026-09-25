@@ -73,9 +73,9 @@ Regenerar direcciones si cambia la agenda:
   por `sed_get` / `sed_post`, que son `SECURITY DEFINER` y devuelven solo lo anterior.
 - `sed_log` guarda cada acción (quién se apuntó o canceló y cuándo), para auditoría.
 
-⚠ **La página no dice el nombre de la intervención ni menciona tratamiento/control.** Se
-llama solo *Encuesta de Clima de Aula*, igual que el resto del material que circula por
-fuera del equipo. Mantenerlo así.
+⚠ **La página se llama solo *Encuesta de Clima de Aula*.** Nunca el nombre del programa,
+igual que el resto del material que circula por fuera del equipo. Este repo es público:
+mantenerlo así, aquí y en la página.
 
 ## Publicar
 
