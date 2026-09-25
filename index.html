@@ -149,6 +149,8 @@
              <input id="fEmail" type="email" placeholder="nombre@educacionbogota.gov.co" autocomplete="email"></div>
         <div><label for="fDep">Dependencia o dirección local</label>
              <input id="fDep" type="text" placeholder="Dirección Local de Suba" autocomplete="organization"></div>
+        <div><label for="fEquipo">Equipo</label>
+             <input id="fEquipo" type="text" placeholder="Equipo de Convivencia Escolar"></div>
         <div><label for="fTel">Celular (opcional)</label>
              <input id="fTel" type="tel" placeholder="300 000 0000" autocomplete="tel"></div>
       </div>
@@ -180,23 +182,18 @@
     </div>
 
     <div class="card">
-      <h2>Buscar en la agenda</h2>
-      <p class="sub">Están todas las visitas. Filtre solo si quiere.</p>
+      <h2>Escoja el día y la hora</h2>
+      <p class="sub">Escoja un momento y abajo quedan los colegios de ese momento.
+        Si los deja en «Todas», ve la agenda completa.</p>
       <div class="filtros">
+        <div class="f"><label for="fFecha">Día</label><select id="fFecha"></select></div>
+        <div class="f"><label for="fHora">Hora</label><select id="fHora"></select></div>
         <div class="f"><label for="fLoc">Localidad</label><select id="fLoc"></select></div>
-        <div class="f"><label for="fFecha">Fecha</label><select id="fFecha"></select></div>
-        <div class="f"><label for="fFranja">Franja</label>
-          <select id="fFranja">
-            <option value="">Todo el día</option>
-            <option value="am">Mañana (antes de las 12)</option>
-            <option value="pm">Tarde (desde las 12)</option>
-          </select></div>
         <div class="f"><label for="fBuscar">Colegio o barrio</label>
           <input id="fBuscar" type="text" placeholder="Escriba parte del nombre"></div>
       </div>
       <div class="chips" style="margin-top:12px">
         <div class="chip" id="chSinNadie">Solo las que no tienen a nadie</div>
-        <div class="chip" id="chCupo">Solo con cupo</div>
         <div class="chip" id="chCerca">Mis localidades primero</div>
         <div class="chip" id="chPasadas">Ver también las pasadas</div>
         <div class="chip" id="chLimpiar" style="margin-left:auto">Limpiar filtros</div>
@@ -228,7 +225,7 @@ let VISITAS = [];                        // [{id, slot, fecha, hora, colegio, ..
 let APUNTADOS = {};                      // visita_id -> [{nombre, dependencia, mio}]
 let CUPO = 2;
 let YO = null;                           // {email, nombre, dependencia, telefono, localidades}
-const F = { loc:"", fecha:"", franja:"", q:"", sinNadie:false, conCupo:false, cerca:true, pasadas:false };
+const F = { loc:"", fecha:"", hora:"", q:"", sinNadie:false, conCupo:false, cerca:true, pasadas:false };
 
 const HOY = (() => {                     // hoy en Bogotá, como "YYYY-MM-DD"
   const f = new Intl.DateTimeFormat("en-CA", { timeZone:"America/Bogota",
@@ -305,7 +302,7 @@ function mostrarYo(){
   if (!editando){
     $("#yoIni").textContent = iniciales(YO.nombre).toUpperCase();
     $("#yoNom").textContent = YO.nombre;
-    $("#yoSub").textContent = [YO.dependencia, YO.email].filter(Boolean).join(" · ");
+    $("#yoSub").textContent = [YO.dependencia, YO.equipo, YO.email].filter(Boolean).join(" · ");
   }
   $("#app").style.display = YO ? "" : "none";
 }
@@ -316,6 +313,7 @@ async function guardarYo(){
     nombre: $("#fNombre").value.trim(),
     email:  $("#fEmail").value.trim().toLowerCase(),
     dependencia: $("#fDep").value.trim(),
+    equipo: $("#fEquipo").value.trim(),
     telefono: $("#fTel").value.trim(),
     localidades: [...document.querySelectorAll(".locchip.on")].map(c => c.dataset.l)
   };
@@ -327,7 +325,7 @@ async function guardarYo(){
     const r = await sedPost(cuerpo);
     if (!r.ok){ $("#yoMsg").innerHTML = `<div class="aviso err">${esc(r.error)}</div>`; return; }
     YO = { email:cuerpo.email, nombre:cuerpo.nombre, dependencia:cuerpo.dependencia,
-           telefono:cuerpo.telefono, localidades:cuerpo.localidades };
+           equipo:cuerpo.equipo, telefono:cuerpo.telefono, localidades:cuerpo.localidades };
     localStorage.setItem(LS, JSON.stringify(YO));
     $("#yoMsg").innerHTML = "";
     mostrarYo();
@@ -371,8 +369,7 @@ function visible(v){
   if (!F.pasadas && v.fecha < HOY) return false;
   if (F.loc && v.localidad !== F.loc) return false;
   if (F.fecha && v.fecha !== F.fecha) return false;
-  if (F.franja === "am" && Number(v.hora.slice(0,2)) >= 12) return false;
-  if (F.franja === "pm" && Number(v.hora.slice(0,2)) <  12) return false;
+  if (F.hora  && v.hora  !== F.hora)  return false;
   const gente = APUNTADOS[v.id] || [];
   if (F.sinNadie && gente.length > 0) return false;
   if (F.conCupo && gente.length >= CUPO) return false;
@@ -412,7 +409,8 @@ function tarjeta(v){
   const clases = ["v", mia ? "mia" : (libre ? "libre" : "cubierta"), pasada ? "pasada" : ""].join(" ");
   const quienes = gente.map(g =>
     `<span class="tag ${g.mio ? "mia" : "ok"}">${esc(g.nombre)}${
-      g.dependencia ? " · " + esc(g.dependencia) : ""}</span>`).join(" ");
+      g.equipo ? " · " + esc(g.equipo) : (g.dependencia ? " · " + esc(g.dependencia) : "")
+    }</span>`).join(" ");
 
   const etiqueta = mia   ? '<span class="tag mia">Usted acompaña esta visita</span>'
                  : libre ? '<span class="tag libre">Sin acompañante</span>' : "";
@@ -420,7 +418,7 @@ function tarjeta(v){
   let boton = "";
   if (pasada)     boton = "";
   else if (mia)   boton = `<button class="btn btn-danger btn-sm" data-cancelar="${esc(v.id)}">Cancelar</button>`;
-  else if (lleno) boton = `<span class="tag ok">Completa</span>`;
+  else if (lleno) boton = `<span class="tag ok">Ya tiene acompañante</span>`;
   else            boton = `<button class="btn btn-primary btn-sm" data-apuntar="${esc(v.id)}">Me apunto</button>`;
 
   const lugar = [v.dir, v.barrio].filter(Boolean).join(" · ");
@@ -482,6 +480,19 @@ function llenarFiltros(){
   const fechas = [...new Set(VISITAS.filter(v => v.fecha >= HOY).map(v => v.fecha))].sort();
   $("#fFecha").innerHTML = '<option value="">Todas</option>' +
     fechas.map(f => `<option value="${f}">${esc(mayus1(fechaLarga(f)))}</option>`).join("");
+  llenarHoras();
+}
+
+// Las horas del select son las que realmente existen ese día, no una rejilla inventada.
+function llenarHoras(){
+  const hs = [...new Set(VISITAS
+    .filter(v => (F.pasadas || v.fecha >= HOY) && (!F.fecha || v.fecha === F.fecha))
+    .map(v => v.hora))].sort();
+  const antes = F.hora;
+  $("#fHora").innerHTML = '<option value="">Todas</option>' +
+    hs.map(h => `<option value="${h}">${esc(hora12(h))}</option>`).join("");
+  if (hs.includes(antes)) $("#fHora").value = antes;
+  else { F.hora = ""; $("#fHora").value = ""; }
 }
 
 /* ------------------------------------------------------------- acciones */
@@ -548,20 +559,21 @@ function conectarEventos(){
   $("#btnGuardarYo").onclick = guardarYo;
   $("#btnEditarYo").onclick = () => {
     $("#fNombre").value = YO.nombre || ""; $("#fEmail").value = YO.email || "";
-    $("#fDep").value = YO.dependencia || ""; $("#fTel").value = YO.telefono || "";
+    $("#fDep").value = YO.dependencia || ""; $("#fEquipo").value = YO.equipo || "";
+    $("#fTel").value = YO.telefono || "";
     marcarChipsLoc(YO.localidades);
     YO = null; mostrarYo();
   };
   $("#btnSalirYo").onclick = () => {
     localStorage.removeItem(LS); YO = null;
-    ["#fNombre","#fEmail","#fDep","#fTel"].forEach(s => $(s).value = "");
+    ["#fNombre","#fEmail","#fDep","#fEquipo","#fTel"].forEach(s => $(s).value = "");
     marcarChipsLoc([]); mostrarYo(); recargarApuntados().then(pintar);
   };
   $("#btnIcs").onclick = ics;
 
-  $("#fLoc").onchange    = e => { F.loc = e.target.value; pintar(); };
-  $("#fFecha").onchange  = e => { F.fecha = e.target.value; pintar(); };
-  $("#fFranja").onchange = e => { F.franja = e.target.value; pintar(); };
+  $("#fLoc").onchange   = e => { F.loc = e.target.value; pintar(); };
+  $("#fFecha").onchange = e => { F.fecha = e.target.value; llenarHoras(); pintar(); };
+  $("#fHora").onchange  = e => { F.hora = e.target.value; pintar(); };
   let tq; $("#fBuscar").oninput = e => { clearTimeout(tq);
     tq = setTimeout(() => { F.q = e.target.value.trim(); pintar(); }, 200); };
 
@@ -570,13 +582,17 @@ function conectarEventos(){
     el.onclick = () => { F[campo] = !F[campo]; el.classList.toggle("on", F[campo]); pintar(); };
     el.classList.toggle("on", F[campo]);
   };
-  alterna("#chSinNadie","sinNadie"); alterna("#chCupo","conCupo");
-  alterna("#chCerca","cerca");       alterna("#chPasadas","pasadas");
+  alterna("#chSinNadie","sinNadie");
+  alterna("#chCerca","cerca");
+  const chP = $("#chPasadas");
+  chP.onclick = () => { F.pasadas = !F.pasadas; chP.classList.toggle("on", F.pasadas);
+                        llenarHoras(); pintar(); };
 
   $("#chLimpiar").onclick = () => {
-    Object.assign(F, { loc:"", fecha:"", franja:"", q:"", sinNadie:false, conCupo:false, pasadas:false });
-    $("#fLoc").value = ""; $("#fFecha").value = ""; $("#fFranja").value = ""; $("#fBuscar").value = "";
-    ["#chSinNadie","#chCupo","#chPasadas"].forEach(s => $(s).classList.remove("on"));
+    Object.assign(F, { loc:"", fecha:"", hora:"", q:"", sinNadie:false, conCupo:false, pasadas:false });
+    $("#fLoc").value = ""; $("#fFecha").value = ""; $("#fBuscar").value = "";
+    llenarHoras();
+    ["#chSinNadie","#chPasadas"].forEach(s => $(s).classList.remove("on"));
     pintar();
   };
 

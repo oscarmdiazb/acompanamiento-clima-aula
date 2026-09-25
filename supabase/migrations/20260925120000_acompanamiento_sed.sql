@@ -10,7 +10,7 @@ create table if not exists public.sed_config (
   valor text not null
 );
 insert into public.sed_config (clave, valor) values
-  ('cupo_por_visita', '2'),
+  ('cupo_por_visita', '1'),
   ('dominios_permitidos', '.gov.co')
 on conflict (clave) do nothing;
 
@@ -18,11 +18,14 @@ create table if not exists public.sed_personas (
   email       text primary key,
   nombre      text not null,
   dependencia text,
+  equipo      text,
   telefono    text,
   localidades text[] not null default '{}',
   creado_at   timestamptz not null default now(),
   visto_at    timestamptz not null default now()
 );
+
+alter table public.sed_personas add column if not exists equipo text;
 
 create table if not exists public.sed_acompanamientos (
   id           bigserial primary key,
@@ -81,6 +84,7 @@ begin
            jsonb_agg(jsonb_build_object(
              'nombre', p.nombre,
              'dependencia', p.dependencia,
+             'equipo', p.equipo,
              'mio', (a.email = v_email and v_email <> '')
            ) order by a.creado_at) as gente
     from sed_acompanamientos a join sed_personas p on p.email = a.email
@@ -135,14 +139,16 @@ begin
     if v_nombre = '' then
       return jsonb_build_object('ok', false, 'error', 'Falta el nombre.');
     end if;
-    insert into sed_personas (email, nombre, dependencia, telefono, localidades)
+    insert into sed_personas (email, nombre, dependencia, equipo, telefono, localidades)
     values (v_email, v_nombre, nullif(trim(coalesce(body->>'dependencia','')), ''),
+            nullif(trim(coalesce(body->>'equipo','')), ''),
             nullif(trim(coalesce(body->>'telefono','')), ''),
             coalesce((select array_agg(x) from jsonb_array_elements_text(
                        coalesce(body->'localidades', '[]'::jsonb)) x), '{}'))
     on conflict (email) do update
       set nombre = excluded.nombre,
           dependencia = coalesce(excluded.dependencia, sed_personas.dependencia),
+          equipo = coalesce(excluded.equipo, sed_personas.equipo),
           telefono = coalesce(excluded.telefono, sed_personas.telefono),
           localidades = excluded.localidades,
           visto_at = now();
@@ -166,7 +172,9 @@ begin
     select count(*) into v_n
     from sed_acompanamientos where visita_id = v_visita and estado = 'confirmado';
     if v_n >= v_cupo then
-      return jsonb_build_object('ok', false, 'error', 'Esa visita ya tiene sus acompañantes.');
+      return jsonb_build_object('ok', false, 'error',
+        case when v_cupo = 1 then 'Esa visita ya tiene acompañante.'
+             else 'Esa visita ya tiene sus acompañantes.' end);
     end if;
 
     -- una persona no puede estar en dos visitas a la misma hora

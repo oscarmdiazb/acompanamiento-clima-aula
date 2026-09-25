@@ -6,7 +6,7 @@
 #   ./exportar.sh salida.csv -> guarda en CSV
 set -euo pipefail
 SQL="select a.fecha, a.hora, a.localidad, a.colegio, a.sede, a.jornada, a.clase,
-            p.nombre, p.dependencia, p.email, p.telefono, a.creado_at
+            p.nombre, p.equipo, p.dependencia, p.email, p.telefono, a.creado_at
      from sed_acompanamientos a join sed_personas p on p.email = a.email
      where a.estado = 'confirmado'
      order by a.fecha, a.hora, a.colegio;"

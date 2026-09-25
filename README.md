@@ -10,11 +10,13 @@ desactualizadas aquí.
 
 ## Cómo funciona
 
-1. La persona abre la página y escribe nombre + correo institucional. **No hay contraseña.**
-   El correo debe terminar en `.gov.co`; eso es lo único que filtra quién puede apuntarse.
-2. Ve **toda** la agenda: todos los días, todas las horas, todos los colegios, con la
-   **dirección y el barrio** de cada sede. Puede filtrar por localidad, fecha, franja o
-   nombre, pero nada la obliga a filtrar.
+1. La persona abre la página y escribe nombre, correo institucional, dependencia y
+   **equipo**. **No hay contraseña.** El correo debe terminar en `.gov.co`; eso es lo
+   único que filtra quién puede apuntarse.
+2. **Escoge el día y la hora**, y abajo quedan los colegios de ese momento. Las horas del
+   selector son las que realmente existen ese día, no una rejilla inventada. Si deja día y
+   hora en «Todas», ve **toda** la agenda: todos los días, todos los colegios, con la
+   **dirección y el barrio** de cada sede. También puede filtrar por localidad o por nombre.
 3. Pulsa **«Me apunto»**. Puede cancelar cuando quiera.
 4. Se lleva sus visitas al calendario con un archivo `.ics` (Outlook, Google, Apple).
 
@@ -22,15 +24,17 @@ Reglas que impone el servidor:
 
 | Regla | Por qué |
 |---|---|
-| Máximo **2** personas por visita | Que nadie amontone acompañantes en las visitas cómodas |
+| **Una sola** persona por visita | Es lo que pidió la SED; y así nadie amontona acompañantes en las visitas cómodas |
 | No se puede estar en **dos visitas a la misma hora** | Error humano frecuente |
 | Correo institucional `.gov.co` | Evita que se apunte cualquiera |
 
 Las dos primeras se cambian en la tabla `sed_config`, sin migración:
 
 ```bash
-cd ~/oscar-personal-apps && supabase db query --linked "update sed_config set valor='3' where clave='cupo_por_visita'"
+cd ~/oscar-personal-apps && supabase db query --linked "update sed_config set valor='2' where clave='cupo_por_visita'"
 ```
+
+El texto de la página se adapta solo: con cupo 1 dice «Ya tiene acompañante».
 
 ## Archivos
 
@@ -41,7 +45,7 @@ cd ~/oscar-personal-apps && supabase db query --linked "update sed_config set va
 | `sedes.js` | Dirección y barrio de cada sede. Generado, no se edita a mano |
 | `construir_sedes.py` | Regenera `sedes.js` desde el directorio oficial de sedes de la SED |
 | `supabase/migrations/…sql` | Tablas `sed_*` y las funciones `sed_get` / `sed_post` |
-| `exportar.sh` | Lista de acompañamientos **con correo y celular** (no sale por la página) |
+| `exportar.sh` | Lista de acompañamientos **con equipo, correo y celular** (no sale por la página) |
 | `huecos.sh` | Qué visitas siguen sin acompañante |
 
 ## De dónde sale cada dato
@@ -63,8 +67,8 @@ Regenerar direcciones si cambia la agenda:
 ## Privacidad
 
 - La página **no tiene ningún dato de estudiantes**. Ni nombres, ni códigos, ni roles.
-- De las otras personas apuntadas se muestra **solo nombre y dependencia**. Nunca el
-  correo ni el celular; esos salen únicamente por `exportar.sh`.
+- De las otras personas apuntadas se muestra **solo nombre y equipo** (o dependencia si no
+  hay equipo). Nunca el correo ni el celular; esos salen únicamente por `exportar.sh`.
 - Las tablas `sed_*` tienen RLS **sin políticas**: la anon key no puede leerlas. Todo pasa
   por `sed_get` / `sed_post`, que son `SECURITY DEFINER` y devuelven solo lo anterior.
 - `sed_log` guarda cada acción (quién se apuntó o canceló y cuándo), para auditoría.
