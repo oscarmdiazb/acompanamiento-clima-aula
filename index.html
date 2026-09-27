@@ -30,7 +30,7 @@
   .card .sub{font-size:13px;color:var(--muted);margin-bottom:14px}
 
   label{display:block;font-weight:700;font-size:12.5px;margin-bottom:5px}
-  input[type=text],select{width:100%;padding:10px 12px;border:1px solid var(--border);
+  input[type=text],input[type=tel],select{width:100%;padding:10px 12px;border:1px solid var(--border);
     border-radius:9px;font-family:inherit;font-size:14.5px;background:#fff;color:var(--text)}
   input:focus,select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(15,76,129,.12)}
 
@@ -233,6 +233,10 @@
         <label for="dEquipo">Equipo</label>
         <input id="dEquipo" type="text" placeholder="Equipo de Convivencia Escolar">
       </div>
+      <div class="campo">
+        <label for="dTel">Celular de contacto</label>
+        <input id="dTel" type="tel" inputmode="tel" placeholder="300 000 0000" autocomplete="tel">
+      </div>
       <div id="dlgMsg"></div>
       <div class="acc">
         <button class="btn btn-ghost btn-lg" id="dVolver">Volver</button>
@@ -255,8 +259,8 @@
 
 <!-- El ?v= lo sube publicar.sh en cada publicacion, para que ningun navegador
      siga sirviendo una copia vieja de sedes.js. -->
-<script src="sb-config.js?v=202609271649"></script>
-<script src="sedes.js?v=202609271649"></script>
+<script src="sb-config.js?v=202609271754"></script>
+<script src="sedes.js?v=202609271754"></script>
 <script>
 "use strict";
 
@@ -375,6 +379,9 @@ const lugarDe = v => [v.dir, v.barrio].filter(Boolean).join(" · ");
 // Bogotá tiene colegios distintos con el mismo nombre (hay dos «Guillermo León
 // Valencia», uno en Antonio Nariño y otro en Engativá) y buscar por nombre lleva
 // al equivocado. Con el punto exacto no hay confusión posible.
+// Ojo: el celular de quien se apunta NO se muestra en ninguna tarjeta ni popup.
+// La página es pública y un número personal no puede quedar a la vista de
+// cualquiera con el enlace. Sale solo por exportar.sh.
 function dirHTML(v){
   const lugar = lugarDe(v);
   if (!lugar) return "";
@@ -490,25 +497,30 @@ function abrir(id){
   $("#dlgCita").innerHTML = resumenCita(v);
   $("#dNombre").value = (YO && YO.nombre) || "";
   $("#dEquipo").value = (YO && YO.equipo) || "";
+  $("#dTel").value    = (YO && YO.telefono) || "";
   $("#dlgMsg").innerHTML = "";
   $("#dlgForm").style.display = "";
   $("#dlgExito").style.display = "none";
   $("#fondo").hidden = false;
-  setTimeout(() => $(YO && YO.nombre ? "#dConfirmar" : "#dNombre").focus(), 60);
+  setTimeout(() => {
+    const falta = ["#dNombre","#dEquipo","#dTel"].find(x => !$(x).value.trim());
+    $(falta || "#dConfirmar").focus();
+  }, 60);
 }
 function cerrar(){ $("#fondo").hidden = true; ABIERTA = null; }
 
 async function confirmar(){
   const v = ABIERTA; if (!v) return;
   const nombre = $("#dNombre").value.trim(), equipo = $("#dEquipo").value.trim();
+  const telefono = $("#dTel").value.trim();
   const b = $("#dConfirmar");
   b.disabled = true; b.textContent = "Confirmando…";
   try{
-    const r = await sedPost({ accion:"apuntar", token:TOKEN, nombre, equipo, visita_id:v.id,
+    const r = await sedPost({ accion:"apuntar", token:TOKEN, nombre, equipo, telefono, visita_id:v.id,
       fecha:v.fecha, hora:v.hora, colegio:v.colegio, sede:v.sedeNom,
       localidad:v.localidad, jornada:v.jornada, clase:v.clase, dane:v.dane });
     if (!r.ok){ $("#dlgMsg").innerHTML = `<div class="aviso err">${esc(r.error)}</div>`; return; }
-    YO = { nombre, equipo };
+    YO = { nombre, equipo, telefono };
     try { localStorage.setItem(LS_YO, JSON.stringify(YO)); } catch (e) {}
     await recargarApuntados();
     if (MAPA) MAPA.closePopup();

@@ -19,11 +19,12 @@ desactualizadas aquí.
    quedan los colegios de ese momento; las horas del selector son las que realmente existen
    ese día, no una rejilla inventada. También puede filtrar por localidad o por nombre.
 2. Pulsa **«Me apunto»** en la visita que quiera.
-3. Se le piden **dos datos: nombre completo y equipo.** Nada más. Confirma.
+3. Se le piden **tres datos: nombre completo, equipo y celular de contacto.** Nada más.
+   Confirma.
 4. Queda apuntada y puede llevarse la cita a su calendario con un `.ics`
    (Outlook, Google, Apple).
 
-La segunda vez el nombre y el equipo vienen puestos, así que es un clic y confirmar.
+La segunda vez los tres vienen puestos, así que es un clic y confirmar.
 Puede cancelar cuando quiera.
 
 **Quién puede cancelar:** quien se apuntó desde ese mismo navegador (se guarda un token
@@ -72,6 +73,7 @@ Reglas que impone el servidor:
 | **Una sola** persona por visita | Es lo que pidió la SED; y así nadie amontona acompañantes en las visitas cómodas |
 | No se puede estar en **dos visitas a la misma hora** | Error humano frecuente |
 | Nombre **y** apellido, y equipo | Un nombre suelto no sirve para saber quién va |
+| Celular de al menos 7 dígitos | Es para poder llamar si hay un cambio de última hora |
 
 La primera se cambia en la tabla `sed_config`, sin migración:
 
@@ -137,9 +139,12 @@ Regenerar direcciones si cambia la agenda:
 ## Privacidad
 
 - La página **no tiene ningún dato de estudiantes**. Ni nombres, ni códigos, ni roles.
-- De cada persona solo existen **nombre y equipo**. No se pide correo, ni celular, ni
-  documento, así que no hay nada más que proteger. Para contactar a alguien se pasa por su
-  equipo.
+- De cada persona existen **nombre, equipo y celular**. No se pide correo ni documento.
+- ⚠ **El celular NO se muestra en la página.** La página es pública: cualquiera con el enlace
+  la abre, así que un número personal no puede quedar a la vista. `sed_get` devuelve solo
+  nombre, equipo y si la visita es suya — verificado: el teléfono no sale por ahí ni leyendo
+  la tabla con la anon key. El celular sale **únicamente** por `exportar.sh`.
+- Las filas anteriores al 27-sep-2026 no tienen celular: se pidió después.
 - Las tablas `sed_*` tienen RLS **sin políticas**: la anon key no puede leerlas. Todo pasa
   por `sed_get` / `sed_post`, que son `SECURITY DEFINER` y devuelven solo lo anterior.
 - `sed_log` guarda cada acción (quién se apuntó o canceló y cuándo), para auditoría.
