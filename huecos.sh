@@ -17,6 +17,8 @@ for slot, lista in ag.get("details", {}).items():
     fecha = slot.split(" ")[0]
     if fecha < hoy: continue
     for v in lista:
+        if str(v.get("dane", "")).startswith("EXTRA"):
+            continue                      # filas del operativo, no son de seguimiento
         total += 1
         vid = f"{slot}|{v['dane']}|{v['clase']}"
         if not ap.get(vid):

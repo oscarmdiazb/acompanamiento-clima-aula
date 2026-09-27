@@ -92,12 +92,26 @@ externa de la página, aparte de las fuentes.
   111 de 112 sedes quedan con dirección; la que falta viene como código (`S010`), no como
   nombre.
 
-  Las filas **sintéticas** del operativo (`dane` que empieza por `EXTRA`: `EXTRA`,
-  `EXTRA-R3`, `EXTRA-R3REV`) no traen una sede real — su campo `sede` es una nota de
-  coordinación («corto plazo», «confirmado por WhatsApp 11-sep») y su `clase` es un código.
-  Esas se cruzan por **nombre de colegio**, y en la página **no se muestran ni la sede ni el
-  curso**, y al colegio se le quita el prefijo `R3 · `. Si aparece un `dane` sintético nuevo,
-  la regla ya lo cubre: basta con volver a correr `construir_sedes.py`.
+## Solo visitas de seguimiento
+
+La agenda de reservas trae, además del seguimiento, filas del operativo de **Ronda 3** y
+alguna suelta, todas con un `dane` sintético que empieza por `EXTRA` (`EXTRA`, `EXTRA-R3`,
+`EXTRA-R3REV`). **Esta página las descarta**: solo muestra las visitas de seguimiento
+(27-sep-2026, decisión de Oscar). Son 86 visitas, 66 por venir.
+
+El interruptor es **una sola línea** de `index.html`:
+
+```js
+const esExtra = v => (v.dane || "").startsWith("EXTRA");
+...
+if (esExtra(v)) continue;                 // solo visitas de seguimiento
+```
+
+`huecos.sh` aplica la misma regla, para que los dos números coincidan.
+
+⚠ Al aplicar el filtro, **una persona ya estaba apuntada a una visita de Ronda 3** (Julio
+Flórez, 1-oct 07:00). Su fila **sigue en la base**, pero ya no se ve en la página ni en sus
+«Mis acompañamientos». Si esa visita no va a ocurrir, hay que avisarle y cancelarla a mano.
 - **Quién acompaña** → tablas `sed_*` de este aplicativo.
 
 Regenerar direcciones si cambia la agenda:

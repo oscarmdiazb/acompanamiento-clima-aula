@@ -251,8 +251,8 @@
 
 <!-- El ?v= lo sube publicar.sh en cada publicacion, para que ningun navegador
      siga sirviendo una copia vieja de sedes.js. -->
-<script src="sb-config.js?v=202609271616"></script>
-<script src="sedes.js?v=202609271616"></script>
+<script src="sb-config.js?v=202609271629"></script>
+<script src="sedes.js?v=202609271629"></script>
 <script>
 "use strict";
 
@@ -291,6 +291,10 @@ function norm(s){                                   // igual que construir_sedes
   s = s.replace(/\b(COLEGIO|IED|CED|SEDE|INSTITUCION EDUCATIVA DISTRITAL)\b/g," ");
   return s.replace(/[^A-Z0-9]+/g," ").trim();
 }
+// La agenda de reservas trae, además de las visitas de seguimiento, filas del
+// operativo de Ronda 3 y otras sueltas, todas con un `dane` sintético que empieza
+// por EXTRA. Esta página es solo para las de seguimiento, así que se descartan.
+// Si algún día hay que volver a mostrarlas, es esta única línea.
 const esExtra = v => (v.dane || "").startsWith("EXTRA");
 const claveSede = v => esExtra(v) ? "R3|" + norm(v.colegio) : v.dane + "|" + norm(v.sede);
 const SIGLAS = ["IED","CED","CEDID","SED","OCE","IE"];
@@ -323,17 +327,13 @@ function construirVisitas(details){
   for (const slot of Object.keys(details)){
     const [fecha, hora] = slot.split(" ");
     for (const v of details[slot]){
+      if (esExtra(v)) continue;                 // solo visitas de seguimiento
       const sede = (typeof SEDES !== "undefined" ? SEDES[claveSede(v)] : null) || {};
-      // En las filas sintéticas del operativo (dane EXTRA*), «sede» y «clase» son notas
-      // internas («corto plazo», «confirmado por whatsapp», un código). No se muestran.
-      const r3 = esExtra(v);
       out.push({
         id: `${slot}|${v.dane}|${v.clase}`, slot, fecha, hora,
-        colegio: r3 ? (v.colegio || "").replace(/^\s*R3\s*[·.-]\s*/, "") : v.colegio,
-        sedeNom: r3 ? "" : v.sede,
-        clase:   r3 ? "" : v.clase,
+        colegio: v.colegio, sedeNom: v.sede, clase: v.clase,
         jornada: v.jornada, dane: v.dane,
-        localidad: (v.localidad === "EXTRA" ? (sede.loc || "") : v.localidad) || "",
+        localidad: v.localidad || sede.loc || "",
         dir: sede.dir || "", barrio: sede.barrio || "",
         lat: sede.lat || null, lon: sede.lon || null
       });
