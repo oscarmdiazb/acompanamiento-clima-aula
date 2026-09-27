@@ -81,6 +81,10 @@
   .v .meta{font-size:12.5px;color:var(--muted);margin-top:2px}
   .v .meta .sep{color:var(--border);margin:0 5px}
   .v .dir{font-size:12.5px;color:var(--muted);margin-top:3px}
+  a.mapa-link{color:var(--primary);text-decoration:none;font-weight:700;
+    border-bottom:1px dotted rgba(15,76,129,.45)}
+  a.mapa-link:hover{border-bottom-style:solid}
+  a.mapa-link .flecha{font-weight:800;font-size:11px;margin-left:2px}
   .v .acc{display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin-top:9px}
   .tag{font-size:11.5px;font-weight:800;border-radius:999px;padding:3px 9px}
   .tag.libre{background:var(--warn-soft);color:var(--warn)}
@@ -251,8 +255,8 @@
 
 <!-- El ?v= lo sube publicar.sh en cada publicacion, para que ningun navegador
      siga sirviendo una copia vieja de sedes.js. -->
-<script src="sb-config.js?v=202609271629"></script>
-<script src="sedes.js?v=202609271629"></script>
+<script src="sb-config.js?v=202609271649"></script>
+<script src="sedes.js?v=202609271649"></script>
 <script>
 "use strict";
 
@@ -367,6 +371,20 @@ function visible(v){
 /* ----------------------------------------------------------------- pintado */
 const lugarDe = v => [v.dir, v.barrio].filter(Boolean).join(" · ");
 
+// La dirección se enlaza a Google Maps POR COORDENADAS, nunca por nombre:
+// Bogotá tiene colegios distintos con el mismo nombre (hay dos «Guillermo León
+// Valencia», uno en Antonio Nariño y otro en Engativá) y buscar por nombre lleva
+// al equivocado. Con el punto exacto no hay confusión posible.
+function dirHTML(v){
+  const lugar = lugarDe(v);
+  if (!lugar) return "";
+  const texto = esc(titulo(lugar));
+  if (!v.lat || !v.lon) return texto;
+  const url = "https://www.google.com/maps/search/?api=1&query=" + v.lat + "," + v.lon;
+  return `<a class="mapa-link" href="${url}" target="_blank" rel="noopener"
+    title="Abrir en Google Maps">${texto}<span class="flecha">&#8599;</span></a>`;
+}
+
 function tarjeta(v){
   const gente  = APUNTADOS[v.id] || [];
   const mia    = gente.some(g => g.mio);
@@ -384,7 +402,7 @@ function tarjeta(v){
   else if (lleno) boton = `<span class="tag ok">Ya tiene acompañante</span>`;
   else            boton = `<button class="btn btn-primary btn-sm" data-apuntar="${esc(v.id)}">Me apunto</button>`;
 
-  const lugar = lugarDe(v);
+  const dir = dirHTML(v);
   return `<div class="v ${mia ? "mia" : (libre ? "" : "cubierta")} ${pasada ? "pasada" : ""}">
     <div class="hora">${esc(hora12(v.hora))}<small>${esc(v.jornada || "")}</small></div>
     <div class="cuerpo">
@@ -393,7 +411,7 @@ function tarjeta(v){
         v.sedeNom && norm(v.sedeNom) !== norm(v.colegio)
           ? '<span class="sep">|</span>Sede ' + esc(titulo(v.sedeNom)) : ""}${
         v.clase ? '<span class="sep">|</span>Curso ' + esc(v.clase) : ""}</div>
-      ${lugar ? `<div class="dir">${esc(titulo(lugar))}</div>` : ""}
+      ${dir ? `<div class="dir">${dir}</div>` : ""}
       <div class="acc">${mia ? '<span class="tag mia">Usted acompaña esta visita</span>' : ""}${
         libre && !pasada ? '<span class="tag libre">Sin acompañante</span>' : ""}${quienes}</div>
     </div>
@@ -461,10 +479,10 @@ function llenarHoras(){
 
 /* ------------------------------------------- ventana: escoger y confirmar */
 function resumenCita(v){
-  const lugar = lugarDe(v);
+  const dir = dirHTML(v);
   return `<b>${esc(titulo(v.colegio))}</b>
     <span>${esc(mayus1(fechaLarga(v.fecha)))} · ${esc(hora12(v.hora))}</span>
-    <div class="lugar">${esc(titulo(v.localidad))}${lugar ? " · " + esc(titulo(lugar)) : ""}</div>`;
+    <div class="lugar">${esc(titulo(v.localidad))}${dir ? " · " + dir : ""}</div>`;
 }
 function abrir(id){
   const v = VISITAS.find(x => x.id === id); if (!v) return;
@@ -541,7 +559,7 @@ function estadoDe(v){
 }
 
 function popup(grupo){
-  const v0 = grupo[0], lugar = lugarDe(v0);
+  const v0 = grupo[0];
   const filas = grupo.map(v => {
     const g = APUNTADOS[v.id] || [];
     const mia = g.some(x => x.mio), pasada = v.fecha < HOY;
@@ -554,7 +572,7 @@ function popup(grupo){
       <small>${esc(mayus1(fechaLarga(v.fecha)))}</small></div>${acc}</div>`;
   }).join("");
   return `<div class="pop-col">${esc(titulo(v0.colegio))}</div>
-    <div class="pop-dir">${esc(titulo(v0.localidad))}${lugar ? " · " + esc(titulo(lugar)) : ""}</div>
+    <div class="pop-dir">${esc(titulo(v0.localidad))}${dirHTML(v0) ? " · " + dirHTML(v0) : ""}</div>
     ${filas}`;
 }
 
@@ -646,7 +664,10 @@ function ics(soloUna){
       "SUMMARY:Acompañamiento · Encuesta de Clima de Aula · " + titulo(v.colegio),
       "LOCATION:" + lugar.replace(/,/g,"\\,"),
       "DESCRIPTION:Jornada " + (v.jornada||"") + ". Curso " + (v.clase||"") +
-        ". Duración aproximada 2 horas.",
+        ". Duración aproximada 2 horas." +
+        (v.lat ? "\\n\\nCómo llegar: https://www.google.com/maps/search/?api=1&query=" +
+                 v.lat + "," + v.lon : ""),
+      ...(v.lat ? ["GEO:" + v.lat + ";" + v.lon] : []),
       "END:VEVENT");
   });
   ln.push("END:VCALENDAR");

@@ -29,6 +29,20 @@ Puede cancelar cuando quiera.
 **Quién puede cancelar:** quien se apuntó desde ese mismo navegador (se guarda un token
 propio), o quien escriba el mismo nombre. Nadie puede tumbar la visita de otro.
 
+### Nombres de colegio repetidos
+
+Bogotá tiene colegios **distintos con el mismo nombre**. Hay dos «Colegio Guillermo León
+Valencia (IED)»: el del estudio está en **Antonio Nariño** (DANE `111001011053`, Kr 22 # 16
+- 03 Sur) y hay otro en **Engativá** (`111001034002`, Kr 93 A # 75 B - 80). Una persona de
+la SED buscó el nombre en internet, le salió el de Engativá y escribió preocupada.
+
+Por eso **la dirección de cada visita es un enlace a Google Maps por coordenadas**, nunca por
+nombre: `?api=1&query=<lat>,<lon>`. El punto exacto no se puede confundir. El `.ics` también
+lleva el enlace y un campo `GEO`.
+
+Misma trampa que ya estaba documentada en `CLAUDE.md` para los volantes de rastreo: agrupar
+por nombre de colegio en vez de por DANE mezcla dos establecimientos.
+
 ### Lista o mapa
 
 Arriba de la agenda hay un interruptor **Lista / Mapa**. La lista es lo predeterminado.
