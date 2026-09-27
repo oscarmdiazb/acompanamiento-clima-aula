@@ -63,20 +63,28 @@ def main():
     sedes, sin = {}, []
     for v in visitas():
         dane, sede = (v.get("dane") or "").strip(), norm(v.get("sede"))
-        clave = f"{dane}|{sede}" if dane != "EXTRA-R3REV" else f"R3|{norm(v.get('colegio'))}"
+        # Las filas sinteticas del operativo (EXTRA, EXTRA-R3, EXTRA-R3REV) no traen
+        # una sede real: su campo "sede" es una nota. Se cruzan por nombre de colegio.
+        extra = dane.startswith("EXTRA")
+        clave = f"R3|{norm(v.get('colegio'))}" if extra else f"{dane}|{sede}"
         if clave in sedes:
             continue
-        cand = por_est.get(dane, {})
+        cand = {} if extra else por_est.get(dane, {})
         info = cand.get(sede)
         if info is None and len(cand) == 1:          # una sola sede: no hay ambiguedad
             info = next(iter(cand.values()))
-        if info is None:
+        if info is None and not extra:
             info = por_nombre.get(sede)               # por nombre de sede
         if info is None:
-            # revisitas de Ronda 3: la "sede" es una nota, no un nombre de sede.
             # Se cruza por el nombre del colegio, quitando el prefijo "R3 · ".
             nom = norm(re.sub(r"^\s*R3\s*[·.-]\s*", "", v.get("colegio") or ""))
-            info = por_colegio.get(nom)
+            info = por_colegio.get(nom) or por_nombre.get(nom)
+            if info is None and len(nom) >= 8:
+                # "CULTURA POPULAR" vs "DE CULTURA POPULAR": se acepta la coincidencia
+                # parcial SOLO si un unico colegio del directorio la cumple.
+                cs = [k for k in por_colegio if nom in k or k in nom]
+                if len(cs) == 1:
+                    info = por_colegio[cs[0]]
         if info:
             sedes[clave] = info
         else:

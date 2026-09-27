@@ -159,6 +159,12 @@ const SEDES = {
   "loc": "SAN CRISTOBAL",
   "tel": "2082080"
  },
+ "11100101952601|ANTONIA SANTOS": {
+  "barrio": "La Sabana",
+  "dir": "KR 22 # 12 - 49",
+  "loc": "LOS MARTIRES",
+  "tel": "2473421"
+ },
  "11100102040101|": {
   "barrio": "Educacion Tradicional",
   "dir": "SEXTO|SEPTIMO|OCTAVO|NOVENO",
@@ -507,36 +513,6 @@ const SEDES = {
   "loc": "BOSA",
   "tel": "7231962"
  },
- "EXTRA-R3|RONDA 3 CORTO PLAZO": {
-  "barrio": "Los Andes",
-  "dir": "TV 60 C # 95 - 51",
-  "loc": "BARRIOS UNIDOS",
-  "tel": "2367746/48"
- },
- "EXTRA-R3|RONDA 3 CORTO PLAZO CONFIRMADO POR WHATSAPP 11 SEP": {
-  "barrio": "Ciudad Kennedy",
-  "dir": "CL 5 SUR # 72 A - 69",
-  "loc": "KENNEDY",
-  "tel": "2656288/99 -- 2738266"
- },
- "EXTRA-R3|RONDA 3 POSPUSO BARRIOS UNIDOS HORA POR CONFIRMAR": {
-  "barrio": "Simon Bolivar",
-  "dir": "CL 74 A # 63 - 04",
-  "loc": "BARRIOS UNIDOS",
-  "tel": "6603161 -- 2407959--2400101--2509760--2502406"
- },
- "EXTRA-R3|RONDA 3 POSPUSO KENNEDY": {
-  "barrio": "Dindalito",
-  "dir": "KR 93 A # 42 A - 37 SUR",
-  "loc": "KENNEDY",
-  "tel": "4545900  --  2640276"
- },
- "EXTRA|ENCUESTA BASE": {
-  "barrio": "S.C. El Mochuelo Ii",
-  "dir": "KM 10 VIA QUIBA LOTE EL CLAVEL",
-  "loc": "CIUDAD BOLIVAR",
-  "tel": "3046754432"
- },
  "R3|R3 ALFONSO LOPEZ MICHELSEN": {
   "barrio": "San Bernardino Xix",
   "dir": "KR 98 B # 74 - 68 SUR",
@@ -560,6 +536,18 @@ const SEDES = {
   "dir": "CL 79 SUR # 8 - 50 ESTE",
   "loc": "USME",
   "tel": "7640656"
+ },
+ "R3|R3 CULTURA POPULAR": {
+  "barrio": "San Eusebio",
+  "dir": "KR 51 # 16 - 64 SUR",
+  "loc": "PUENTE ARANDA",
+  "tel": "7209631 -- 2028884"
+ },
+ "R3|R3 EDUARDO UMANA LUNA": {
+  "barrio": "Dindalito",
+  "dir": "KR 93 A # 42 A - 37 SUR",
+  "loc": "KENNEDY",
+  "tel": "4545900  --  2640276"
  },
  "R3|R3 EL LIBERTADOR": {
   "barrio": "Libertador",
@@ -596,6 +584,30 @@ const SEDES = {
   "dir": "KR 92 # 89 - 79",
   "loc": "ENGATIVA",
   "tel": "2512811  --  2234915"
+ },
+ "R3|R3 JULIO FLOREZ": {
+  "barrio": "Julio Florez",
+  "dir": "KR 68 B # 94 - 12",
+  "loc": "SUBA",
+  "tel": "6240861  --  6248160  --  3057923922"
+ },
+ "R3|R3 JULIO GARAVITO ARMERO": {
+  "barrio": "Alqueria",
+  "dir": "CL 40 B SUR # 52 C - 60",
+  "loc": "PUENTE ARANDA",
+  "tel": "2384455"
+ },
+ "R3|R3 KENNEDY": {
+  "barrio": "Ciudad Kennedy",
+  "dir": "CL 5 SUR # 72 A - 69",
+  "loc": "KENNEDY",
+  "tel": "2656288/99 -- 2738266"
+ },
+ "R3|R3 LA AMISTAD": {
+  "barrio": "Ciudad Kennedy Oriental",
+  "dir": "KR 78 # 35 - 30 SUR",
+  "loc": "KENNEDY",
+  "tel": "2930278  --  2643189"
  },
  "R3|R3 LA FELICIDAD": {
   "barrio": "Ciudad Hayuelos",
@@ -638,5 +650,23 @@ const SEDES = {
   "dir": "CL 42 B SUR # 78 I - 05",
   "loc": "KENNEDY",
   "tel": "4523267/81 -- 4524612 -- 2734729"
+ },
+ "R3|R3 TECNICO DOMINGO FAUSTINO SARMIENTO": {
+  "barrio": "Los Andes",
+  "dir": "TV 60 C # 95 - 51",
+  "loc": "BARRIOS UNIDOS",
+  "tel": "2367746/48"
+ },
+ "R3|R3 TOMAS CARRASQUILLA": {
+  "barrio": "Simon Bolivar",
+  "dir": "CL 74 A # 63 - 04",
+  "loc": "BARRIOS UNIDOS",
+  "tel": "6603161 -- 2407959--2400101--2509760--2502406"
+ },
+ "R3|RURAL JOSE CELESTINO MUTIS": {
+  "barrio": "S.C. El Mochuelo Ii",
+  "dir": "KM 10 VIA QUIBA LOTE EL CLAVEL",
+  "loc": "CIUDAD BOLIVAR",
+  "tel": "3046754432"
  }
 };

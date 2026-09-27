@@ -14,30 +14,25 @@
     --border:#e5e7eb; --primary:#0f4c81; --primary-soft:#e8f0f7; --primary-hover:#0c3d68;
     --ok:#059669; --ok-soft:#e7f6f0; --warn:#b45309; --warn-soft:#fef3c7; --err:#dc2626;
     --shadow:0 1px 2px rgba(16,24,40,.05), 0 1px 3px rgba(16,24,40,.06);
-    --radius:12px;
   }
   *{box-sizing:border-box;margin:0;padding:0}
   html,body{font-family:'Nunito',-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
     background:var(--bg);color:var(--text);line-height:1.5;font-size:15px;-webkit-font-smoothing:antialiased}
   .wrap{max-width:1040px;margin:0 auto;padding:28px 18px 80px}
-  a{color:var(--primary)}
 
   .brand{font-size:11px;font-weight:800;letter-spacing:.14em;color:var(--primary);text-transform:uppercase}
   h1{font-size:25px;font-weight:800;margin:6px 0 8px;letter-spacing:-.01em}
-  .lead{color:var(--muted);max-width:660px}
+  .lead{color:var(--muted);max-width:680px}
 
-  .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+  .card{background:var(--card);border:1px solid var(--border);border-radius:12px;
     box-shadow:var(--shadow);margin:16px 0;padding:18px 20px}
   .card h2{font-size:16px;font-weight:800;margin-bottom:4px}
   .card .sub{font-size:13px;color:var(--muted);margin-bottom:14px}
 
   label{display:block;font-weight:700;font-size:12.5px;margin-bottom:5px}
-  input[type=text],input[type=email],input[type=tel],select{
-    width:100%;padding:9px 11px;border:1px solid var(--border);border-radius:9px;
-    font-family:inherit;font-size:14px;background:#fff;color:var(--text)}
+  input[type=text],select{width:100%;padding:10px 12px;border:1px solid var(--border);
+    border-radius:9px;font-family:inherit;font-size:14.5px;background:#fff;color:var(--text)}
   input:focus,select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(15,76,129,.12)}
-  .grid{display:grid;gap:12px;grid-template-columns:1fr 1fr}
-  @media(max-width:640px){.grid{grid-template-columns:1fr}}
 
   .btn{padding:9px 16px;border:1px solid transparent;border-radius:9px;cursor:pointer;
     font-family:inherit;font-weight:700;font-size:13.5px;transition:.15s;white-space:nowrap}
@@ -49,33 +44,23 @@
   .btn-danger{background:#fff;border-color:#f3c9c9;color:var(--err)}
   .btn-danger:hover:not(:disabled){background:#fdf2f2}
   .btn-sm{padding:6px 12px;font-size:12.5px}
+  .btn-lg{padding:12px 20px;font-size:15px}
 
-  /* identidad */
-  .yo{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-  .avatar{width:38px;height:38px;border-radius:50%;background:var(--primary-soft);color:var(--primary);
-    display:grid;place-items:center;font-weight:800;font-size:14px;flex:none}
-  .yo .quien{flex:1;min-width:150px}
-  .yo .quien b{display:block;font-size:14.5px}
-  .yo .quien span{font-size:12.5px;color:var(--muted)}
-
-  /* resumen */
-  .stats{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0 4px}
+  .stats{display:flex;gap:10px;flex-wrap:wrap;margin:16px 0 4px}
   .stat{background:#fff;border:1px solid var(--border);border-radius:10px;padding:10px 14px;
-    box-shadow:var(--shadow);min-width:104px}
+    box-shadow:var(--shadow);min-width:112px}
   .stat b{display:block;font-size:20px;font-weight:800;line-height:1.15}
   .stat span{font-size:11.5px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.04em}
   .stat.ok b{color:var(--ok)} .stat.warn b{color:var(--warn)} .stat.mine b{color:var(--primary)}
 
-  /* filtros */
   .filtros{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
   .filtros .f{flex:1;min-width:150px}
-  .chips{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
+  .chips{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
   .chip{border:1px solid var(--border);background:#fff;border-radius:999px;padding:5px 12px;
     font-size:12.5px;font-weight:700;cursor:pointer;color:var(--muted);transition:.12s}
   .chip:hover{border-color:var(--primary);color:var(--primary)}
   .chip.on{background:var(--primary);border-color:var(--primary);color:#fff}
 
-  /* dias y visitas */
   .dia{margin-top:22px}
   .dia-h{display:flex;align-items:baseline;gap:10px;padding:0 2px 8px;
     border-bottom:2px solid var(--border);margin-bottom:10px;position:sticky;top:0;
@@ -83,14 +68,13 @@
   .dia-h b{font-size:15.5px;font-weight:800}
   .dia-h span{font-size:12.5px;color:var(--muted);font-weight:700}
 
-  .v{background:#fff;border:1px solid var(--border);border-left:4px solid var(--faint);
+  .v{background:#fff;border:1px solid var(--border);border-left:4px solid var(--warn);
     border-radius:10px;box-shadow:var(--shadow);padding:13px 15px;margin-bottom:9px;
     display:flex;gap:14px;align-items:flex-start}
-  .v.libre{border-left-color:var(--warn)}
   .v.cubierta{border-left-color:var(--ok)}
   .v.mia{border-left-color:var(--primary);background:#fbfdff}
   .v.pasada{opacity:.6}
-  .v .hora{font-weight:800;font-size:15px;min-width:62px;flex:none;padding-top:1px}
+  .v .hora{font-weight:800;font-size:15px;min-width:64px;flex:none;padding-top:1px}
   .v .hora small{display:block;font-size:11px;color:var(--muted);font-weight:700}
   .v .cuerpo{flex:1;min-width:0}
   .v .col{font-weight:800;font-size:14.5px}
@@ -98,7 +82,7 @@
   .v .meta .sep{color:var(--border);margin:0 5px}
   .v .dir{font-size:12.5px;color:var(--muted);margin-top:3px}
   .v .acc{display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin-top:9px}
-  .tag{font-size:11.5px;font-weight:800;border-radius:999px;padding:3px 9px;letter-spacing:.02em}
+  .tag{font-size:11.5px;font-weight:800;border-radius:999px;padding:3px 9px}
   .tag.libre{background:var(--warn-soft);color:var(--warn)}
   .tag.ok{background:var(--ok-soft);color:var(--ok)}
   .tag.mia{background:var(--primary-soft);color:var(--primary)}
@@ -110,15 +94,31 @@
   }
 
   .vacio{text-align:center;padding:40px 20px;color:var(--muted)}
-  .status{text-align:center;padding:50px 20px;color:var(--muted)}
+  .status{text-align:center;padding:60px 20px;color:var(--muted)}
   .spin{display:inline-block;width:28px;height:28px;border:3px solid var(--border);
     border-top-color:var(--primary);border-radius:50%;animation:s .8s linear infinite}
   @keyframes s{to{transform:rotate(360deg)}}
 
   .aviso{border-radius:10px;padding:11px 14px;font-size:13.5px;font-weight:600;margin:12px 0}
   .aviso.err{background:#fdf2f2;color:var(--err);border:1px solid #f3c9c9}
-  .aviso.ok{background:var(--ok-soft);color:var(--ok);border:1px solid #bfe7d8}
-  .aviso.info{background:var(--primary-soft);color:var(--primary);border:1px solid #cfe1ef}
+
+  /* ---- ventana de confirmación ---- */
+  .fondo{position:fixed;inset:0;background:rgba(17,24,39,.45);z-index:40;
+    display:grid;place-items:center;padding:18px}
+  .fondo[hidden]{display:none}
+  .dlg{background:#fff;border-radius:14px;max-width:460px;width:100%;
+    box-shadow:0 20px 50px rgba(0,0,0,.22);padding:22px 24px;max-height:92vh;overflow:auto}
+  .dlg h2{font-size:18px;font-weight:800;margin-bottom:12px}
+  .dlg .cita{background:var(--primary-soft);border-radius:10px;padding:12px 14px;margin-bottom:18px}
+  .dlg .cita b{display:block;font-size:15px}
+  .dlg .cita span{font-size:13px;color:var(--primary);font-weight:700}
+  .dlg .cita .lugar{font-size:12.5px;color:var(--muted);font-weight:600;margin-top:3px}
+  .dlg .campo{margin-bottom:14px}
+  .dlg .acc{display:flex;gap:10px;margin-top:20px}
+  .dlg .acc .btn{flex:1}
+  .exito{text-align:center;padding:6px 0 0}
+  .exito .tick{width:52px;height:52px;border-radius:50%;background:var(--ok-soft);color:var(--ok);
+    display:grid;place-items:center;font-size:27px;margin:0 auto 12px;font-weight:800}
 
   .pie{margin-top:40px;font-size:12px;color:var(--faint);text-align:center;line-height:1.7}
   .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:22px;z-index:50;
@@ -134,42 +134,12 @@
   <div class="brand">Secretaría de Educación del Distrito</div>
   <h1>Acompañamiento a la Encuesta de Clima de Aula</h1>
   <p class="lead">Cada aplicación de la encuesta necesita el acompañamiento de una persona de
-  la SED. Abajo está la agenda completa. Escoja el día, la hora y el colegio que mejor le
-  queden, y apúntese. Puede cancelar cuando quiera.</p>
+  la SED. Abajo está la agenda completa. Escoja la visita que mejor le quede y apúntese: solo
+  le pedimos su nombre y su equipo.</p>
 
-  <!-- ============ quién soy ============ -->
-  <div class="card" id="cardYo">
-    <h2>Quién soy</h2>
-    <p class="sub">Solo hace falta una vez en este dispositivo. No hay contraseña.</p>
-    <div id="yoForm">
-      <div class="grid">
-        <div><label for="fNombre">Nombre y apellido</label>
-             <input id="fNombre" type="text" placeholder="Ana María Rodríguez" autocomplete="name"></div>
-        <div><label for="fEmail">Correo institucional</label>
-             <input id="fEmail" type="email" placeholder="nombre@educacionbogota.gov.co" autocomplete="email"></div>
-        <div><label for="fDep">Dependencia o dirección local</label>
-             <input id="fDep" type="text" placeholder="Dirección Local de Suba" autocomplete="organization"></div>
-        <div><label for="fEquipo">Equipo</label>
-             <input id="fEquipo" type="text" placeholder="Equipo de Convivencia Escolar"></div>
-        <div><label for="fTel">Celular (opcional)</label>
-             <input id="fTel" type="tel" placeholder="300 000 0000" autocomplete="tel"></div>
-      </div>
-      <div style="margin-top:12px">
-        <label>¿En qué localidades le queda fácil? (opcional — solo sirve para ordenar la lista)</label>
-        <div class="chips" id="chipsLoc"></div>
-      </div>
-      <div id="yoMsg"></div>
-      <div style="margin-top:14px"><button class="btn btn-primary" id="btnGuardarYo">Guardar y ver la agenda</button></div>
-    </div>
-    <div class="yo" id="yoResumen" style="display:none">
-      <div class="avatar" id="yoIni"></div>
-      <div class="quien"><b id="yoNom"></b><span id="yoSub"></span></div>
-      <button class="btn btn-ghost btn-sm" id="btnEditarYo">Editar</button>
-      <button class="btn btn-ghost btn-sm" id="btnSalirYo">No soy yo</button>
-    </div>
-  </div>
+  <div class="status" id="cargando"><div class="spin"></div>
+    <div style="margin-top:12px">Cargando la agenda…</div></div>
 
-  <!-- ============ contenido ============ -->
   <div id="app" style="display:none">
 
     <div class="stats" id="stats"></div>
@@ -178,7 +148,8 @@
       <h2>Mis acompañamientos</h2>
       <p class="sub">Puede llevarlos a su calendario de Outlook con un archivo .ics.</p>
       <div id="listaMias"></div>
-      <div style="margin-top:12px"><button class="btn btn-ghost btn-sm" id="btnIcs">Agregar a mi calendario</button></div>
+      <div style="margin-top:12px">
+        <button class="btn btn-ghost btn-sm" id="btnIcs">Agregar a mi calendario</button></div>
     </div>
 
     <div class="card">
@@ -192,9 +163,8 @@
         <div class="f"><label for="fBuscar">Colegio o barrio</label>
           <input id="fBuscar" type="text" placeholder="Escriba parte del nombre"></div>
       </div>
-      <div class="chips" style="margin-top:12px">
+      <div class="chips">
         <div class="chip" id="chSinNadie">Solo las que no tienen a nadie</div>
-        <div class="chip" id="chCerca">Mis localidades primero</div>
         <div class="chip" id="chPasadas">Ver también las pasadas</div>
         <div class="chip" id="chLimpiar" style="margin-left:auto">Limpiar filtros</div>
       </div>
@@ -203,152 +173,129 @@
     <div id="lista"></div>
   </div>
 
-  <div class="status" id="cargando"><div class="spin"></div><div style="margin-top:12px">Cargando la agenda…</div></div>
-
   <div class="pie">
     Encuesta de Clima de Aula · Secretaría de Educación del Distrito · Bogotá 2026<br>
-    Esta página no contiene información de estudiantes. Dudas: <span id="pieContacto">la coordinación del operativo</span>.
+    Esta página no contiene información de estudiantes.
+  </div>
+</div>
+
+<!-- ventana de confirmación -->
+<div class="fondo" id="fondo" hidden>
+  <div class="dlg" role="dialog" aria-modal="true" aria-labelledby="dlgTitulo">
+    <div id="dlgForm">
+      <h2 id="dlgTitulo">Confirmar acompañamiento</h2>
+      <div class="cita" id="dlgCita"></div>
+      <div class="campo">
+        <label for="dNombre">Nombre completo</label>
+        <input id="dNombre" type="text" placeholder="Ana María Rodríguez" autocomplete="name">
+      </div>
+      <div class="campo">
+        <label for="dEquipo">Equipo</label>
+        <input id="dEquipo" type="text" placeholder="Equipo de Convivencia Escolar">
+      </div>
+      <div id="dlgMsg"></div>
+      <div class="acc">
+        <button class="btn btn-ghost btn-lg" id="dVolver">Volver</button>
+        <button class="btn btn-primary btn-lg" id="dConfirmar">Confirmar</button>
+      </div>
+    </div>
+    <div id="dlgExito" style="display:none" class="exito">
+      <div class="tick">✓</div>
+      <h2>Listo, quedó apuntado</h2>
+      <div class="cita" id="dlgCitaOk" style="margin-top:14px;text-align:left"></div>
+      <div class="acc">
+        <button class="btn btn-ghost btn-lg" id="dCerrar">Cerrar</button>
+        <button class="btn btn-primary btn-lg" id="dIcs">Agregar a mi calendario</button>
+      </div>
+    </div>
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
 
-<script src="sb-config.js"></script>
-<script src="sedes.js"></script>
+<!-- El ?v= lo sube publicar.sh en cada publicacion, para que ningun navegador
+     siga sirviendo una copia vieja de sedes.js. -->
+<script src="sb-config.js?v=202609271429"></script>
+<script src="sedes.js?v=202609271429"></script>
 <script>
 "use strict";
 
 /* ------------------------------------------------------------------ estado */
-const LS = "sed_acomp_yo";
-const DUR_MIN = 120;                     // la aplicación dura unas 2 horas
-let VISITAS = [];                        // [{id, slot, fecha, hora, colegio, ...}]
-let APUNTADOS = {};                      // visita_id -> [{nombre, dependencia, mio}]
-let CUPO = 2;
-let YO = null;                           // {email, nombre, dependencia, telefono, localidades}
-const F = { loc:"", fecha:"", hora:"", q:"", sinNadie:false, conCupo:false, cerca:true, pasadas:false };
+const LS_TOKEN = "sed_token";        // identifica este navegador, para poder cancelar
+const LS_YO    = "sed_yo";           // nombre y equipo, para no volver a escribirlos
+const DUR_MIN  = 120;                // la aplicación dura unas 2 horas
 
-const HOY = (() => {                     // hoy en Bogotá, como "YYYY-MM-DD"
-  const f = new Intl.DateTimeFormat("en-CA", { timeZone:"America/Bogota",
-              year:"numeric", month:"2-digit", day:"2-digit" });
-  return f.format(new Date());
+let VISITAS = [], APUNTADOS = {}, CUPO = 1, ABIERTA = null;
+const F = { loc:"", fecha:"", hora:"", q:"", sinNadie:false, pasadas:false };
+
+const TOKEN = (() => {
+  let t = null;
+  try { t = localStorage.getItem(LS_TOKEN); } catch (e) {}
+  if (!t) {
+    t = (crypto.randomUUID ? crypto.randomUUID()
+                           : "t" + Date.now() + Math.random().toString(36).slice(2));
+    try { localStorage.setItem(LS_TOKEN, t); } catch (e) {}
+  }
+  return t;
 })();
+let YO = (() => { try { return JSON.parse(localStorage.getItem(LS_YO) || "null"); }
+                  catch (e) { return null; } })();
 
-const LOCALIDADES = ["ANTONIO NARIÑO","BARRIOS UNIDOS","BOSA","CHAPINERO","CIUDAD BOLIVAR",
-  "ENGATIVA","FONTIBON","KENNEDY","LOS MARTIRES","PUENTE ARANDA","RAFAEL URIBE URIBE",
-  "SAN CRISTOBAL","SANTAFE","SUBA","SUMAPAZ","TEUSAQUILLO","TUNJUELITO","USAQUEN","USME"];
+const HOY = new Intl.DateTimeFormat("en-CA", { timeZone:"America/Bogota",
+              year:"numeric", month:"2-digit", day:"2-digit" }).format(new Date());
 
 /* ------------------------------------------------------------------ utiles */
 const $ = s => document.querySelector(s);
 const esc = s => String(s==null?"":s).replace(/[&<>"']/g, c =>
   ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
 
-function norm(s){                         // igual que construir_sedes.py
+function norm(s){                                   // igual que construir_sedes.py
   s = (s||"").normalize("NFKD").replace(/[̀-ͯ]/g,"").toUpperCase();
   s = s.replace(/\b(COLEGIO|IED|CED|SEDE|INSTITUCION EDUCATIVA DISTRITAL)\b/g," ");
   return s.replace(/[^A-Z0-9]+/g," ").trim();
 }
-function claveSede(v){
-  return v.dane === "EXTRA-R3REV" ? "R3|" + norm(v.colegio) : v.dane + "|" + norm(v.sede);
-}
-const SIGLAS = ["IED","CED","CEDID","SED","OCE","IE","JT","JM"];
+const esExtra = v => (v.dane || "").startsWith("EXTRA");
+const claveSede = v => esExtra(v) ? "R3|" + norm(v.colegio) : v.dane + "|" + norm(v.sede);
+const SIGLAS = ["IED","CED","CEDID","SED","OCE","IE"];
 function titulo(s){
   let t = (s||"").toLowerCase().replace(/(^|[\s(·\-\/])([a-záéíóúñ])/g,(m,a,b)=>a+b.toUpperCase());
-  // las siglas se escriben en mayúscula: "Colegio Charry (Ied)" -> "(IED)"
-  SIGLAS.forEach(g => {
-    t = t.replace(new RegExp("\\b" + g[0] + g.slice(1).toLowerCase() + "\\b", "g"), g);
-  });
+  SIGLAS.forEach(g => { t = t.replace(
+    new RegExp("\\b" + g[0] + g.slice(1).toLowerCase() + "\\b","g"), g); });
   return t;
 }
-function mayus1(s){ return (s||"").charAt(0).toUpperCase() + (s||"").slice(1); }
+const mayus1 = s => (s||"").charAt(0).toUpperCase() + (s||"").slice(1);
 function fechaLarga(iso){
   const [a,m,d] = iso.split("-").map(Number);
-  const dt = new Date(Date.UTC(a, m-1, d));
-  return new Intl.DateTimeFormat("es-CO",{ timeZone:"UTC", weekday:"long",
-           day:"numeric", month:"long" }).format(dt);
+  return new Intl.DateTimeFormat("es-CO",{ timeZone:"UTC", weekday:"long", day:"numeric",
+    month:"long" }).format(new Date(Date.UTC(a, m-1, d)));
 }
 function hora12(h){
   const [H,M] = h.split(":").map(Number);
-  const s = H < 12 ? "a.m." : "p.m.";
-  return ((H%12)||12) + ":" + String(M).padStart(2,"0") + " " + s;
+  return ((H%12)||12) + ":" + String(M).padStart(2,"0") + " " + (H < 12 ? "a.m." : "p.m.");
 }
 let tt;
 function toast(msg, err){
   const t = $("#toast"); t.textContent = msg;
   t.className = "toast on" + (err ? " err" : "");
-  clearTimeout(tt); tt = setTimeout(()=>{ t.className = "toast"; }, 3600);
+  clearTimeout(tt); tt = setTimeout(() => { t.className = "toast"; }, 3600);
 }
 
-/* ------------------------------------------------------------- identidad */
-function iniciales(n){
-  const p = (n||"").trim().split(/\s+/);
-  return ((p[0]||"")[0] || "") + ((p[1]||"")[0] || "");
-}
-function pintarChipsLoc(){
-  $("#chipsLoc").innerHTML = LOCALIDADES.map(l =>
-    `<div class="chip locchip" data-l="${esc(l)}">${esc(titulo(l))}</div>`).join("");
-  document.querySelectorAll(".locchip").forEach(c =>
-    c.onclick = () => c.classList.toggle("on"));
-}
-function marcarChipsLoc(ls){
-  document.querySelectorAll(".locchip").forEach(c =>
-    c.classList.toggle("on", (ls||[]).includes(c.dataset.l)));
-}
-function mostrarYo(){
-  const editando = !YO;
-  $("#yoForm").style.display    = editando ? "" : "none";
-  $("#yoResumen").style.display = editando ? "none" : "flex";
-  $("#cardYo").querySelector(".sub").style.display = editando ? "" : "none";
-  $("#cardYo").querySelector("h2").textContent = editando ? "Quién soy" : "";
-  if (!editando){
-    $("#yoIni").textContent = iniciales(YO.nombre).toUpperCase();
-    $("#yoNom").textContent = YO.nombre;
-    $("#yoSub").textContent = [YO.dependencia, YO.equipo, YO.email].filter(Boolean).join(" · ");
-  }
-  $("#app").style.display = YO ? "" : "none";
-}
-async function guardarYo(){
-  const b = $("#btnGuardarYo");
-  const cuerpo = {
-    accion:"registrar",
-    nombre: $("#fNombre").value.trim(),
-    email:  $("#fEmail").value.trim().toLowerCase(),
-    dependencia: $("#fDep").value.trim(),
-    equipo: $("#fEquipo").value.trim(),
-    telefono: $("#fTel").value.trim(),
-    localidades: [...document.querySelectorAll(".locchip.on")].map(c => c.dataset.l)
-  };
-  if (!cuerpo.nombre || !cuerpo.email){
-    $("#yoMsg").innerHTML = '<div class="aviso err">Falta el nombre o el correo.</div>'; return;
-  }
-  b.disabled = true; b.textContent = "Guardando…";
-  try{
-    const r = await sedPost(cuerpo);
-    if (!r.ok){ $("#yoMsg").innerHTML = `<div class="aviso err">${esc(r.error)}</div>`; return; }
-    YO = { email:cuerpo.email, nombre:cuerpo.nombre, dependencia:cuerpo.dependencia,
-           equipo:cuerpo.equipo, telefono:cuerpo.telefono, localidades:cuerpo.localidades };
-    localStorage.setItem(LS, JSON.stringify(YO));
-    $("#yoMsg").innerHTML = "";
-    mostrarYo();
-    await recargarApuntados();
-    pintar();
-    toast("Listo. Ya puede apuntarse.");
-  }catch(e){
-    $("#yoMsg").innerHTML = '<div class="aviso err">No se pudo guardar. Revise la conexión.</div>';
-  }finally{ b.disabled = false; b.textContent = "Guardar y ver la agenda"; }
-}
-
-/* ----------------------------------------------------------------- datos */
+/* ------------------------------------------------------------------- datos */
 function construirVisitas(details){
   const out = [];
   for (const slot of Object.keys(details)){
     const [fecha, hora] = slot.split(" ");
     for (const v of details[slot]){
       const sede = (typeof SEDES !== "undefined" ? SEDES[claveSede(v)] : null) || {};
+      // En las filas sintéticas del operativo (dane EXTRA*), «sede» y «clase» son notas
+      // internas («corto plazo», «confirmado por whatsapp», un código). No se muestran.
+      const r3 = esExtra(v);
       out.push({
-        id: `${slot}|${v.dane}|${v.clase}`,
-        slot, fecha, hora,
-        colegio: v.colegio, sedeNom: v.sede, jornada: v.jornada,
-        clase: v.clase, dane: v.dane,
+        id: `${slot}|${v.dane}|${v.clase}`, slot, fecha, hora,
+        colegio: r3 ? (v.colegio || "").replace(/^\s*R3\s*[·.-]\s*/, "") : v.colegio,
+        sedeNom: r3 ? "" : v.sede,
+        clase:   r3 ? "" : v.clase,
+        jornada: v.jornada, dane: v.dane,
         localidad: (v.localidad === "EXTRA" ? (sede.loc || "") : v.localidad) || "",
         dir: sede.dir || "", barrio: sede.barrio || ""
       });
@@ -358,21 +305,18 @@ function construirVisitas(details){
   return out;
 }
 async function recargarApuntados(){
-  const d = await sedGet(YO ? YO.email : null);
+  const d = await sedGet(TOKEN);
   APUNTADOS = d.apuntados || {};
-  CUPO = d.cupo || 2;
-  if (d.yo && YO){ YO = Object.assign({}, YO, d.yo); localStorage.setItem(LS, JSON.stringify(YO)); }
+  CUPO = d.cupo || 1;
 }
 
-/* --------------------------------------------------------------- filtros */
+/* ----------------------------------------------------------------- filtros */
 function visible(v){
   if (!F.pasadas && v.fecha < HOY) return false;
-  if (F.loc && v.localidad !== F.loc) return false;
-  if (F.fecha && v.fecha !== F.fecha) return false;
-  if (F.hora  && v.hora  !== F.hora)  return false;
-  const gente = APUNTADOS[v.id] || [];
-  if (F.sinNadie && gente.length > 0) return false;
-  if (F.conCupo && gente.length >= CUPO) return false;
+  if (F.loc   && v.localidad !== F.loc)   return false;
+  if (F.fecha && v.fecha     !== F.fecha) return false;
+  if (F.hora  && v.hora      !== F.hora)  return false;
+  if (F.sinNadie && (APUNTADOS[v.id]||[]).length > 0) return false;
   if (F.q){
     const q = norm(F.q);
     if (!(norm(v.colegio).includes(q) || norm(v.sedeNom).includes(q) ||
@@ -381,24 +325,10 @@ function visible(v){
   }
   return true;
 }
-function ordenDias(dias){
-  if (!F.cerca || !YO || !(YO.localidades||[]).length) return dias;
-  return dias;   // el orden por cercanía se aplica dentro de cada día
-}
-function ordenVisitas(vs){
-  const mias = new Set(Object.keys(APUNTADOS).filter(k =>
-    (APUNTADOS[k]||[]).some(g => g.mio)));
-  const cerca = new Set(F.cerca && YO ? (YO.localidades || []) : []);
-  return vs.slice().sort((a,b) => {
-    const pa = (mias.has(a.id) ? 0 : 1) - (mias.has(b.id) ? 0 : 1);
-    if (pa) return pa;
-    const ca = (cerca.has(a.localidad) ? 0 : 1) - (cerca.has(b.localidad) ? 0 : 1);
-    if (ca) return ca;
-    return a.hora.localeCompare(b.hora) || (a.colegio||"").localeCompare(b.colegio||"");
-  });
-}
 
-/* --------------------------------------------------------------- pintado */
+/* ----------------------------------------------------------------- pintado */
+const lugarDe = v => [v.dir, v.barrio].filter(Boolean).join(" · ");
+
 function tarjeta(v){
   const gente  = APUNTADOS[v.id] || [];
   const mia    = gente.some(g => g.mio);
@@ -406,14 +336,9 @@ function tarjeta(v){
   const lleno  = gente.length >= CUPO;
   const pasada = v.fecha < HOY;
 
-  const clases = ["v", mia ? "mia" : (libre ? "libre" : "cubierta"), pasada ? "pasada" : ""].join(" ");
   const quienes = gente.map(g =>
     `<span class="tag ${g.mio ? "mia" : "ok"}">${esc(g.nombre)}${
-      g.equipo ? " · " + esc(g.equipo) : (g.dependencia ? " · " + esc(g.dependencia) : "")
-    }</span>`).join(" ");
-
-  const etiqueta = mia   ? '<span class="tag mia">Usted acompaña esta visita</span>'
-                 : libre ? '<span class="tag libre">Sin acompañante</span>' : "";
+      g.equipo ? " · " + esc(g.equipo) : ""}</span>`).join(" ");
 
   let boton = "";
   if (pasada)     boton = "";
@@ -421,9 +346,8 @@ function tarjeta(v){
   else if (lleno) boton = `<span class="tag ok">Ya tiene acompañante</span>`;
   else            boton = `<button class="btn btn-primary btn-sm" data-apuntar="${esc(v.id)}">Me apunto</button>`;
 
-  const lugar = [v.dir, v.barrio].filter(Boolean).join(" · ");
-
-  return `<div class="${clases}">
+  const lugar = lugarDe(v);
+  return `<div class="v ${mia ? "mia" : (libre ? "" : "cubierta")} ${pasada ? "pasada" : ""}">
     <div class="hora">${esc(hora12(v.hora))}<small>${esc(v.jornada || "")}</small></div>
     <div class="cuerpo">
       <div class="col">${esc(titulo(v.colegio))}</div>
@@ -432,44 +356,44 @@ function tarjeta(v){
           ? '<span class="sep">|</span>Sede ' + esc(titulo(v.sedeNom)) : ""}${
         v.clase ? '<span class="sep">|</span>Curso ' + esc(v.clase) : ""}</div>
       ${lugar ? `<div class="dir">${esc(titulo(lugar))}</div>` : ""}
-      <div class="acc">${etiqueta}${quienes}</div>
+      <div class="acc">${mia ? '<span class="tag mia">Usted acompaña esta visita</span>' : ""}${
+        libre && !pasada ? '<span class="tag libre">Sin acompañante</span>' : ""}${quienes}</div>
     </div>
     <div class="lado">${boton}</div>
   </div>`;
 }
 
 function pintar(){
-  // estadísticas
-  const futuras = VISITAS.filter(v => v.fecha >= HOY);
+  const futuras  = VISITAS.filter(v => v.fecha >= HOY);
   const sinNadie = futuras.filter(v => !(APUNTADOS[v.id]||[]).length).length;
-  const mias = VISITAS.filter(v => (APUNTADOS[v.id]||[]).some(g => g.mio)).length;
+  const mias     = VISITAS.filter(v => (APUNTADOS[v.id]||[]).some(g => g.mio)).length;
   $("#stats").innerHTML = `
     <div class="stat"><b>${futuras.length}</b><span>Visitas por venir</span></div>
     <div class="stat ${sinNadie ? "warn" : "ok"}"><b>${sinNadie}</b><span>Sin acompañante</span></div>
     <div class="stat ok"><b>${futuras.length - sinNadie}</b><span>Ya cubiertas</span></div>
     <div class="stat mine"><b>${mias}</b><span>Mías</span></div>`;
 
-  // mis visitas
   const listaMias = VISITAS.filter(v => (APUNTADOS[v.id]||[]).some(g => g.mio) && v.fecha >= HOY);
   $("#cardMias").style.display = listaMias.length ? "" : "none";
   $("#listaMias").innerHTML = listaMias.map(tarjeta).join("");
 
-  // agenda
   const vis = VISITAS.filter(visible);
   if (!vis.length){
     $("#lista").innerHTML = `<div class="card vacio">No hay visitas con esos filtros.<br>
-      <button class="btn btn-ghost btn-sm" style="margin-top:12px" onclick="document.getElementById('chLimpiar').click()">Limpiar filtros</button></div>`;
+      <button class="btn btn-ghost btn-sm" style="margin-top:12px"
+        onclick="document.getElementById('chLimpiar').click()">Limpiar filtros</button></div>`;
     return;
   }
   const porDia = {};
   vis.forEach(v => (porDia[v.fecha] = porDia[v.fecha] || []).push(v));
-  $("#lista").innerHTML = ordenDias(Object.keys(porDia).sort()).map(f => {
+  $("#lista").innerHTML = Object.keys(porDia).sort().map(f => {
     const n = porDia[f].length;
     const s = porDia[f].filter(v => !(APUNTADOS[v.id]||[]).length).length;
     return `<div class="dia">
       <div class="dia-h"><b>${esc(mayus1(fechaLarga(f)))}</b>
-        <span>${n} visita${n===1?"":"s"}${s ? " · " + s + " sin acompañante" : " · todas cubiertas"}</span></div>
-      ${ordenVisitas(porDia[f]).map(tarjeta).join("")}</div>`;
+        <span>${n} visita${n===1?"":"s"}${s ? " · " + s + " sin acompañante"
+                                            : " · todas cubiertas"}</span></div>
+      ${porDia[f].map(tarjeta).join("")}</div>`;
   }).join("");
 }
 
@@ -482,8 +406,7 @@ function llenarFiltros(){
     fechas.map(f => `<option value="${f}">${esc(mayus1(fechaLarga(f)))}</option>`).join("");
   llenarHoras();
 }
-
-// Las horas del select son las que realmente existen ese día, no una rejilla inventada.
+// Las horas del selector son las que realmente existen ese día, no una rejilla inventada.
 function llenarHoras(){
   const hs = [...new Set(VISITAS
     .filter(v => (F.pasadas || v.fecha >= HOY) && (!F.fecha || v.fecha === F.fecha))
@@ -495,50 +418,78 @@ function llenarHoras(){
   else { F.hora = ""; $("#fHora").value = ""; }
 }
 
-/* ------------------------------------------------------------- acciones */
-async function apuntar(id){
+/* ------------------------------------------- ventana: escoger y confirmar */
+function resumenCita(v){
+  const lugar = lugarDe(v);
+  return `<b>${esc(titulo(v.colegio))}</b>
+    <span>${esc(mayus1(fechaLarga(v.fecha)))} · ${esc(hora12(v.hora))}</span>
+    <div class="lugar">${esc(titulo(v.localidad))}${lugar ? " · " + esc(titulo(lugar)) : ""}</div>`;
+}
+function abrir(id){
   const v = VISITAS.find(x => x.id === id); if (!v) return;
-  const b = document.querySelector(`[data-apuntar="${CSS.escape(id)}"]`);
-  if (b){ b.disabled = true; b.textContent = "…"; }
+  ABIERTA = v;
+  $("#dlgCita").innerHTML = resumenCita(v);
+  $("#dNombre").value = (YO && YO.nombre) || "";
+  $("#dEquipo").value = (YO && YO.equipo) || "";
+  $("#dlgMsg").innerHTML = "";
+  $("#dlgForm").style.display = "";
+  $("#dlgExito").style.display = "none";
+  $("#fondo").hidden = false;
+  setTimeout(() => $(YO && YO.nombre ? "#dConfirmar" : "#dNombre").focus(), 60);
+}
+function cerrar(){ $("#fondo").hidden = true; ABIERTA = null; }
+
+async function confirmar(){
+  const v = ABIERTA; if (!v) return;
+  const nombre = $("#dNombre").value.trim(), equipo = $("#dEquipo").value.trim();
+  const b = $("#dConfirmar");
+  b.disabled = true; b.textContent = "Confirmando…";
   try{
-    const r = await sedPost({ accion:"apuntar", email:YO.email, visita_id:id,
+    const r = await sedPost({ accion:"apuntar", token:TOKEN, nombre, equipo, visita_id:v.id,
       fecha:v.fecha, hora:v.hora, colegio:v.colegio, sede:v.sedeNom,
       localidad:v.localidad, jornada:v.jornada, clase:v.clase, dane:v.dane });
-    if (!r.ok){ toast(r.error, true); await recargarApuntados(); pintar(); return; }
+    if (!r.ok){ $("#dlgMsg").innerHTML = `<div class="aviso err">${esc(r.error)}</div>`; return; }
+    YO = { nombre, equipo };
+    try { localStorage.setItem(LS_YO, JSON.stringify(YO)); } catch (e) {}
     await recargarApuntados(); pintar();
-    toast("Apuntado: " + titulo(v.colegio) + ", " + fechaLarga(v.fecha));
-  }catch(e){ toast("No se pudo. Revise la conexión.", true);
-             if (b){ b.disabled = false; b.textContent = "Me apunto"; } }
+    $("#dlgCitaOk").innerHTML = resumenCita(v);
+    $("#dlgForm").style.display = "none";
+    $("#dlgExito").style.display = "";
+  }catch(e){
+    $("#dlgMsg").innerHTML = '<div class="aviso err">No se pudo. Revise la conexión.</div>';
+  }finally{ b.disabled = false; b.textContent = "Confirmar"; }
 }
+
 async function cancelar(id){
   const v = VISITAS.find(x => x.id === id);
   if (!confirm("¿Cancelar su acompañamiento a " + titulo(v ? v.colegio : "esta visita") + "?")) return;
   try{
-    await sedPost({ accion:"cancelar", email:YO.email, visita_id:id });
+    const r = await sedPost({ accion:"cancelar", token:TOKEN,
+                              nombre:(YO && YO.nombre) || "", visita_id:id });
+    if (!r.ok) return toast(r.error, true);
     await recargarApuntados(); pintar();
     toast("Cancelado. La visita vuelve a quedar libre.");
   }catch(e){ toast("No se pudo cancelar.", true); }
 }
 
-/* ------------------------------------------------------------------ .ics */
-function ics(){
-  const mias = VISITAS.filter(v => (APUNTADOS[v.id]||[]).some(g => g.mio) && v.fecha >= HOY);
+/* -------------------------------------------------------------------- .ics */
+function ics(soloUna){
+  const mias = soloUna ? [soloUna]
+    : VISITAS.filter(v => (APUNTADOS[v.id]||[]).some(g => g.mio) && v.fecha >= HOY);
   if (!mias.length) return;
-  const utc = (fecha, hora, masMin) => {                 // Bogotá = UTC-5, sin horario de verano
-    const [a,m,d] = fecha.split("-").map(Number);
-    const [H,M]   = hora.split(":").map(Number);
-    const t = new Date(Date.UTC(a, m-1, d, H+5, M + (masMin||0)));
-    return t.toISOString().replace(/[-:]/g,"").replace(/\.\d{3}/,"");
+  const utc = (fecha, hora, masMin) => {          // Bogotá = UTC-5, sin horario de verano
+    const [a,m,d] = fecha.split("-").map(Number), [H,M] = hora.split(":").map(Number);
+    return new Date(Date.UTC(a, m-1, d, H+5, M + (masMin||0)))
+             .toISOString().replace(/[-:]/g,"").replace(/\.\d{3}/,"");
   };
-  const ln = [
-    "BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//SED//Acompanamiento Clima de Aula//ES","CALSCALE:GREGORIAN"
-  ];
+  const ln = ["BEGIN:VCALENDAR","VERSION:2.0",
+              "PRODID:-//SED//Acompanamiento Clima de Aula//ES","CALSCALE:GREGORIAN"];
   mias.forEach((v,i) => {
     const lugar = [titulo(v.colegio), v.dir, v.barrio, titulo(v.localidad), "Bogotá"]
                     .filter(Boolean).join(", ");
     ln.push("BEGIN:VEVENT",
-      "UID:sed-" + utc(v.fecha,v.hora) + "-" + i + "@clima-aula",
-      "DTSTAMP:" + utc(HOY,"00:00"),
+      "UID:sed-" + utc(v.fecha, v.hora) + "-" + i + "@clima-aula",
+      "DTSTAMP:" + utc(HOY, "00:00"),
       "DTSTART:" + utc(v.fecha, v.hora),
       "DTEND:"   + utc(v.fecha, v.hora, DUR_MIN),
       "SUMMARY:Acompañamiento · Encuesta de Clima de Aula · " + titulo(v.colegio),
@@ -548,71 +499,59 @@ function ics(){
       "END:VEVENT");
   });
   ln.push("END:VCALENDAR");
-  const url = URL.createObjectURL(new Blob([ln.join("\r\n")], { type:"text/calendar;charset=utf-8" }));
+  const url = URL.createObjectURL(new Blob([ln.join("\r\n")],
+                { type:"text/calendar;charset=utf-8" }));
   const a = document.createElement("a");
   a.href = url; a.download = "acompanamiento-clima-de-aula.ics"; a.click();
   setTimeout(() => URL.revokeObjectURL(url), 2000);
 }
 
-/* ------------------------------------------------------------------ init */
-function conectarEventos(){
-  $("#btnGuardarYo").onclick = guardarYo;
-  $("#btnEditarYo").onclick = () => {
-    $("#fNombre").value = YO.nombre || ""; $("#fEmail").value = YO.email || "";
-    $("#fDep").value = YO.dependencia || ""; $("#fEquipo").value = YO.equipo || "";
-    $("#fTel").value = YO.telefono || "";
-    marcarChipsLoc(YO.localidades);
-    YO = null; mostrarYo();
-  };
-  $("#btnSalirYo").onclick = () => {
-    localStorage.removeItem(LS); YO = null;
-    ["#fNombre","#fEmail","#fDep","#fEquipo","#fTel"].forEach(s => $(s).value = "");
-    marcarChipsLoc([]); mostrarYo(); recargarApuntados().then(pintar);
-  };
-  $("#btnIcs").onclick = ics;
-
+/* -------------------------------------------------------------------- init */
+function conectar(){
   $("#fLoc").onchange   = e => { F.loc = e.target.value; pintar(); };
   $("#fFecha").onchange = e => { F.fecha = e.target.value; llenarHoras(); pintar(); };
   $("#fHora").onchange  = e => { F.hora = e.target.value; pintar(); };
   let tq; $("#fBuscar").oninput = e => { clearTimeout(tq);
     tq = setTimeout(() => { F.q = e.target.value.trim(); pintar(); }, 200); };
 
-  const alterna = (sel, campo) => {
-    const el = $(sel);
-    el.onclick = () => { F[campo] = !F[campo]; el.classList.toggle("on", F[campo]); pintar(); };
-    el.classList.toggle("on", F[campo]);
-  };
-  alterna("#chSinNadie","sinNadie");
-  alterna("#chCerca","cerca");
+  const chS = $("#chSinNadie");
+  chS.onclick = () => { F.sinNadie = !F.sinNadie; chS.classList.toggle("on", F.sinNadie); pintar(); };
   const chP = $("#chPasadas");
   chP.onclick = () => { F.pasadas = !F.pasadas; chP.classList.toggle("on", F.pasadas);
                         llenarHoras(); pintar(); };
-
   $("#chLimpiar").onclick = () => {
-    Object.assign(F, { loc:"", fecha:"", hora:"", q:"", sinNadie:false, conCupo:false, pasadas:false });
+    Object.assign(F, { loc:"", fecha:"", hora:"", q:"", sinNadie:false, pasadas:false });
     $("#fLoc").value = ""; $("#fFecha").value = ""; $("#fBuscar").value = "";
-    llenarHoras();
-    ["#chSinNadie","#chPasadas"].forEach(s => $(s).classList.remove("on"));
-    pintar();
+    [chS, chP].forEach(c => c.classList.remove("on"));
+    llenarHoras(); pintar();
   };
 
+  $("#dVolver").onclick    = cerrar;
+  $("#dCerrar").onclick    = cerrar;
+  $("#dConfirmar").onclick = confirmar;
+  $("#dIcs").onclick       = () => ics(ABIERTA);
+  $("#btnIcs").onclick     = () => ics(null);
+  $("#fondo").onclick      = e => { if (e.target === $("#fondo")) cerrar(); };
+  document.addEventListener("keydown", e => {
+    if (e.key === "Escape" && !$("#fondo").hidden) cerrar();
+    if (e.key === "Enter"  && !$("#fondo").hidden
+        && $("#dlgForm").style.display !== "none") confirmar();
+  });
+
   document.addEventListener("click", e => {
-    const a = e.target.closest("[data-apuntar]");  if (a) return apuntar(a.dataset.apuntar);
+    const a = e.target.closest("[data-apuntar]");  if (a) return abrir(a.dataset.apuntar);
     const c = e.target.closest("[data-cancelar]"); if (c) return cancelar(c.dataset.cancelar);
   });
 }
 
 (async function(){
-  pintarChipsLoc();
-  conectarEventos();
-  try{ YO = JSON.parse(localStorage.getItem(LS) || "null"); }catch(e){ YO = null; }
-  mostrarYo();
+  conectar();
   try{
     const [agenda] = await Promise.all([ traerVisitas(), recargarApuntados() ]);
     VISITAS = construirVisitas(agenda.details || {});
-    if (YO) marcarChipsLoc(YO.localidades);
     llenarFiltros();
     $("#cargando").style.display = "none";
+    $("#app").style.display = "";
     pintar();
   }catch(e){
     $("#cargando").innerHTML = '<div class="aviso err">No se pudo cargar la agenda. ' +

@@ -21,8 +21,8 @@ async function traerVisitas() {
   if (!r.ok) throw new Error("HTTP " + r.status);
   return await r.json();
 }
-async function sedGet(email) {
-  const q = email ? "?p_email=" + encodeURIComponent(email) : "";
+async function sedGet(token) {
+  const q = token ? "?p_token=" + encodeURIComponent(token) : "";
   const r = await fetch(SED_GET + q, { headers: SED_HEADERS });
   if (!r.ok) throw new Error("HTTP " + r.status);
   return await r.json();
