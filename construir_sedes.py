@@ -48,6 +48,15 @@ def main():
                 "tel": (r.get("telefono") or "").strip(),
                 "loc": (r.get("nombre_localidad") or "").strip(),
             }
+            # Coordenadas de la sede, para el mapa. Solo se guardan si caen dentro
+            # de Bogota; el directorio trae algunas en cero o cambiadas de orden.
+            try:
+                lat = float((r.get("sede_latitud") or "").replace(",", "."))
+                lon = float((r.get("sede_longitud") or "").replace(",", "."))
+                if 3.5 < lat < 5.2 and -75.0 < lon < -73.8:
+                    info["lat"], info["lon"] = round(lat, 6), round(lon, 6)
+            except ValueError:
+                pass
             if not info["dir"]:
                 continue
             est = (r.get("dane12_establecimiento_educativo") or "").strip()
@@ -98,7 +107,9 @@ def main():
         "const SEDES = " + json.dumps(sedes, ensure_ascii=False, indent=1, sort_keys=True) + ";\n",
         encoding="utf-8")
 
+    con_coord = sum(1 for v in sedes.values() if "lat" in v)
     print(f"sedes con direccion: {len(sedes)}")
+    print(f"sedes con coordenadas: {con_coord}")
     print(f"sin direccion:       {len(sin)}")
     for c in sin[:15]:
         print("   -", c)

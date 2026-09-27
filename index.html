@@ -103,7 +103,7 @@
   .aviso.err{background:#fdf2f2;color:var(--err);border:1px solid #f3c9c9}
 
   /* ---- ventana de confirmación ---- */
-  .fondo{position:fixed;inset:0;background:rgba(17,24,39,.45);z-index:40;
+  .fondo{position:fixed;inset:0;background:rgba(17,24,39,.45);z-index:1000;
     display:grid;place-items:center;padding:18px}
   .fondo[hidden]{display:none}
   .dlg{background:#fff;border-radius:14px;max-width:460px;width:100%;
@@ -120,8 +120,35 @@
   .exito .tick{width:52px;height:52px;border-radius:50%;background:var(--ok-soft);color:var(--ok);
     display:grid;place-items:center;font-size:27px;margin:0 auto 12px;font-weight:800}
 
+  /* ---- lista / mapa ---- */
+  .vistas{display:inline-flex;background:#fff;border:1px solid var(--border);border-radius:10px;
+    padding:3px;gap:3px;box-shadow:var(--shadow)}
+  .vistas button{border:none;background:transparent;font-family:inherit;font-weight:800;
+    font-size:13.5px;padding:7px 18px;border-radius:8px;cursor:pointer;color:var(--muted)}
+  .vistas button.on{background:var(--primary);color:#fff}
+  .barra-vistas{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:22px}
+  .barra-vistas .nota{font-size:12.5px;color:var(--muted);font-weight:600}
+
+  #mapa{height:min(68vh,620px);border-radius:12px;border:1px solid var(--border);
+    box-shadow:var(--shadow);margin-top:12px;background:#e8eaed}
+  @media(max-width:640px){ #mapa{height:60vh} }
+  .pin{display:grid;place-items:center;width:30px;height:30px;border-radius:50%;
+    color:#fff;font-weight:800;font-size:13px;border:2.5px solid #fff;
+    box-shadow:0 1px 4px rgba(0,0,0,.35)}
+  .pin.libre{background:#d97706}
+  .pin.cubierta{background:var(--ok)}
+  .pin.mia{background:var(--primary)}
+  .leaflet-popup-content{margin:12px 14px;font-family:'Nunito',sans-serif;min-width:240px}
+  .pop-col{font-weight:800;font-size:14.5px;line-height:1.3}
+  .pop-dir{font-size:12.5px;color:var(--muted);margin:3px 0 10px}
+  .pop-v{border-top:1px solid var(--border);padding:9px 0 0;margin-top:9px;
+    display:flex;gap:8px;align-items:center;justify-content:space-between}
+  .pop-v:first-of-type{border-top:none;margin-top:0}
+  .pop-v .cuando{font-size:12.5px;font-weight:700;line-height:1.35}
+  .pop-v .cuando small{display:block;font-weight:600;color:var(--muted)}
+
   .pie{margin-top:40px;font-size:12px;color:var(--faint);text-align:center;line-height:1.7}
-  .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:22px;z-index:50;
+  .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:22px;z-index:1100;
     background:#111827;color:#fff;padding:11px 18px;border-radius:10px;font-weight:700;
     font-size:13.5px;box-shadow:0 8px 24px rgba(0,0,0,.2);opacity:0;pointer-events:none;transition:.2s}
   .toast.on{opacity:1}
@@ -170,7 +197,16 @@
       </div>
     </div>
 
+    <div class="barra-vistas">
+      <div class="vistas">
+        <button id="vLista" class="on">Lista</button>
+        <button id="vMapa">Mapa</button>
+      </div>
+      <span class="nota" id="notaVista"></span>
+    </div>
+
     <div id="lista"></div>
+    <div id="mapa" style="display:none"></div>
   </div>
 
   <div class="pie">
@@ -215,8 +251,8 @@
 
 <!-- El ?v= lo sube publicar.sh en cada publicacion, para que ningun navegador
      siga sirviendo una copia vieja de sedes.js. -->
-<script src="sb-config.js?v=202609271429"></script>
-<script src="sedes.js?v=202609271429"></script>
+<script src="sb-config.js?v=202609271616"></script>
+<script src="sedes.js?v=202609271616"></script>
 <script>
 "use strict";
 
@@ -226,6 +262,7 @@ const LS_YO    = "sed_yo";           // nombre y equipo, para no volver a escrib
 const DUR_MIN  = 120;                // la aplicación dura unas 2 horas
 
 let VISITAS = [], APUNTADOS = {}, CUPO = 1, ABIERTA = null;
+let VISTA = "lista", MAPA = null, CAPA = null;
 const F = { loc:"", fecha:"", hora:"", q:"", sinNadie:false, pasadas:false };
 
 const TOKEN = (() => {
@@ -297,7 +334,8 @@ function construirVisitas(details){
         clase:   r3 ? "" : v.clase,
         jornada: v.jornada, dane: v.dane,
         localidad: (v.localidad === "EXTRA" ? (sede.loc || "") : v.localidad) || "",
-        dir: sede.dir || "", barrio: sede.barrio || ""
+        dir: sede.dir || "", barrio: sede.barrio || "",
+        lat: sede.lat || null, lon: sede.lon || null
       });
     }
   }
@@ -378,6 +416,9 @@ function pintar(){
   $("#listaMias").innerHTML = listaMias.map(tarjeta).join("");
 
   const vis = VISITAS.filter(visible);
+  if (VISTA === "mapa") return pintarMapa(vis);
+
+  $("#notaVista").textContent = vis.length + " visita" + (vis.length === 1 ? "" : "s");
   if (!vis.length){
     $("#lista").innerHTML = `<div class="card vacio">No hay visitas con esos filtros.<br>
       <button class="btn btn-ghost btn-sm" style="margin-top:12px"
@@ -451,7 +492,9 @@ async function confirmar(){
     if (!r.ok){ $("#dlgMsg").innerHTML = `<div class="aviso err">${esc(r.error)}</div>`; return; }
     YO = { nombre, equipo };
     try { localStorage.setItem(LS_YO, JSON.stringify(YO)); } catch (e) {}
-    await recargarApuntados(); pintar();
+    await recargarApuntados();
+    if (MAPA) MAPA.closePopup();
+    pintar();
     $("#dlgCitaOk").innerHTML = resumenCita(v);
     $("#dlgForm").style.display = "none";
     $("#dlgExito").style.display = "";
@@ -467,9 +510,117 @@ async function cancelar(id){
     const r = await sedPost({ accion:"cancelar", token:TOKEN,
                               nombre:(YO && YO.nombre) || "", visita_id:id });
     if (!r.ok) return toast(r.error, true);
-    await recargarApuntados(); pintar();
+    await recargarApuntados();
+    if (MAPA) MAPA.closePopup();
+    pintar();
     toast("Cancelado. La visita vuelve a quedar libre.");
   }catch(e){ toast("No se pudo cancelar.", true); }
+}
+
+/* -------------------------------------------------------------------- mapa */
+// Leaflet se baja solo cuando alguien abre el mapa, para no cargarlo de gratis.
+let leafletListo = null;
+function cargarLeaflet(){
+  if (leafletListo) return leafletListo;
+  leafletListo = new Promise((ok, mal) => {
+    const css = document.createElement("link");
+    css.rel = "stylesheet";
+    css.href = "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css";
+    document.head.appendChild(css);
+    const js = document.createElement("script");
+    js.src = "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js";
+    js.onload = ok; js.onerror = mal;
+    document.head.appendChild(js);
+  });
+  return leafletListo;
+}
+
+function estadoDe(v){
+  const g = APUNTADOS[v.id] || [];
+  return g.some(x => x.mio) ? "mia" : (g.length ? "cubierta" : "libre");
+}
+
+function popup(grupo){
+  const v0 = grupo[0], lugar = lugarDe(v0);
+  const filas = grupo.map(v => {
+    const g = APUNTADOS[v.id] || [];
+    const mia = g.some(x => x.mio), pasada = v.fecha < HOY;
+    let acc;
+    if (pasada)            acc = '<span class="tag">Ya pasó</span>';
+    else if (mia)          acc = `<button class="btn btn-danger btn-sm" data-cancelar="${esc(v.id)}">Cancelar</button>`;
+    else if (g.length >= CUPO) acc = `<span class="tag ok">${esc(g[0].nombre)}</span>`;
+    else                   acc = `<button class="btn btn-primary btn-sm" data-apuntar="${esc(v.id)}">Me apunto</button>`;
+    return `<div class="pop-v"><div class="cuando">${esc(hora12(v.hora))}
+      <small>${esc(mayus1(fechaLarga(v.fecha)))}</small></div>${acc}</div>`;
+  }).join("");
+  return `<div class="pop-col">${esc(titulo(v0.colegio))}</div>
+    <div class="pop-dir">${esc(titulo(v0.localidad))}${lugar ? " · " + esc(titulo(lugar)) : ""}</div>
+    ${filas}`;
+}
+
+async function pintarMapa(vis){
+  try { await cargarLeaflet(); }
+  catch (e) {
+    $("#mapa").innerHTML = '<div class="vacio">No se pudo cargar el mapa. ' +
+      'Use la lista.</div>';
+    return;
+  }
+  const conCoord = vis.filter(v => v.lat && v.lon);
+  const sin = vis.length - conCoord.length;
+  $("#notaVista").textContent = conCoord.length + " visita" + (conCoord.length === 1 ? "" : "s") +
+    " en el mapa" + (sin ? " · " + sin + " sin ubicación, búsquela en la lista" : "");
+
+  if (!MAPA){
+    MAPA = L.map("mapa", { scrollWheelZoom:false }).setView([4.648, -74.105], 11);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19, attribution: "© OpenStreetMap" }).addTo(MAPA);
+    // La rueda del ratón NO hace zoom: si lo hiciera, bajar por la página se
+    // quedaría atrapado dentro del mapa. Se usan los botones + / - o dos dedos.
+    MAPA.on("popupopen", ev => {
+      // Leaflet corta la propagación del clic dentro del popup, así que el
+      // listener global del documento no se entera: se conectan aquí.
+      const el = ev.popup.getElement();
+      el.querySelectorAll("[data-apuntar]").forEach(b =>
+        b.onclick = () => abrir(b.dataset.apuntar));
+      el.querySelectorAll("[data-cancelar]").forEach(b =>
+        b.onclick = () => cancelar(b.dataset.cancelar));
+    });
+  }
+  if (CAPA) MAPA.removeLayer(CAPA);
+  CAPA = L.layerGroup().addTo(MAPA);
+
+  // Un pin por sede: varias visitas al mismo colegio comparten el punto.
+  const porSede = {};
+  conCoord.forEach(v => {
+    const k = v.lat + "," + v.lon;
+    (porSede[k] = porSede[k] || []).push(v);
+  });
+
+  const puntos = [];
+  Object.keys(porSede).forEach(k => {
+    const grupo = porSede[k], [lat, lon] = k.split(",").map(Number);
+    const ests = grupo.map(estadoDe);
+    const clase = ests.includes("mia") ? "mia"
+                : ests.includes("libre") ? "libre" : "cubierta";
+    L.marker([lat, lon], { icon: L.divIcon({
+        className: "", iconSize: [30,30], iconAnchor: [15,15], popupAnchor: [0,-14],
+        html: `<div class="pin ${clase}">${grupo.length}</div>` }) })
+      .bindPopup(popup(grupo), { maxWidth: 320 })
+      .addTo(CAPA);
+    puntos.push([lat, lon]);
+  });
+
+  if (puntos.length) MAPA.fitBounds(puntos, { padding:[36,36], maxZoom:15 });
+  setTimeout(() => MAPA.invalidateSize(), 60);
+}
+
+function cambiarVista(v){
+  VISTA = v;
+  $("#vLista").classList.toggle("on", v === "lista");
+  $("#vMapa").classList.toggle("on", v === "mapa");
+  $("#lista").style.display = v === "lista" ? "" : "none";
+  $("#mapa").style.display  = v === "mapa"  ? "" : "none";
+  pintar();
 }
 
 /* -------------------------------------------------------------------- .ics */
@@ -525,6 +676,9 @@ function conectar(){
     [chS, chP].forEach(c => c.classList.remove("on"));
     llenarHoras(); pintar();
   };
+
+  $("#vLista").onclick = () => cambiarVista("lista");
+  $("#vMapa").onclick  = () => cambiarVista("mapa");
 
   $("#dVolver").onclick    = cerrar;
   $("#dCerrar").onclick    = cerrar;

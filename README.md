@@ -29,6 +29,28 @@ Puede cancelar cuando quiera.
 **Quién puede cancelar:** quien se apuntó desde ese mismo navegador (se guarda un token
 propio), o quien escriba el mismo nombre. Nadie puede tumbar la visita de otro.
 
+### Lista o mapa
+
+Arriba de la agenda hay un interruptor **Lista / Mapa**. La lista es lo predeterminado.
+
+El mapa pone un pin por **sede** con el número de visitas que tiene ahí, y el color dice
+cómo va: **naranja** = alguna sin acompañante, **verde** = todas cubiertas, **azul** = una
+es suya. Al tocar el pin sale el colegio, la dirección y cada visita con su botón, igual que
+en la lista. Respeta los mismos filtros.
+
+Detalles que costaron un rato:
+
+- **Leaflet se baja solo cuando alguien abre el mapa**, no al cargar la página.
+- Leaflet **corta la propagación del clic dentro del popup**, así que el listener global del
+  documento nunca se entera. Los botones del popup se conectan en `popupopen`.
+- Los paneles de Leaflet viven en `z-index` 400–700, así que la ventana de confirmación
+  tuvo que subir a 1000: si no, quedaba **detrás** del mapa.
+- La rueda del ratón no hace zoom, a propósito: si lo hiciera, bajar por la página se
+  quedaría atrapado dentro del mapa.
+- Las coordenadas salen de `sede_longitud` / `sede_latitud` del directorio oficial, y solo
+  se guardan si caen dentro de Bogotá (el archivo trae algunas en cero). 110 de 112 visitas
+  tienen punto; las otras salen contadas al lado del interruptor.
+
 Reglas que impone el servidor:
 
 | Regla | Por qué |
@@ -56,6 +78,9 @@ El texto de la página se adapta solo: con cupo 1 dice «Ya tiene acompañante»
 | `supabase/migrations/…sql` | Tablas `sed_*` y las funciones `sed_get` / `sed_post` |
 | `exportar.sh` | Lista de acompañamientos: quién va a cada visita y de qué equipo |
 | `publicar.sh` | Publica el sitio. **Úselo siempre** en vez de `git push` a secas |
+
+El mapa usa Leaflet y teselas de OpenStreetMap, ambos desde internet. Es la única dependencia
+externa de la página, aparte de las fuentes.
 | `huecos.sh` | Qué visitas siguen sin acompañante |
 
 ## De dónde sale cada dato
