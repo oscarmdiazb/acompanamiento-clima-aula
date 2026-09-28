@@ -83,8 +83,19 @@
   .v .dir{font-size:12.5px;color:var(--muted);margin-top:3px}
   .coord{display:inline-block;font-size:12.5px;color:var(--muted);margin-top:4px}
   .coord b{color:var(--text)}
-  a.tel-link{color:var(--primary);text-decoration:none;font-weight:800;white-space:nowrap}
-  a.tel-link:hover{text-decoration:underline}
+  a.wa{display:inline-flex;align-items:center;gap:4px;color:#0b7a4b;text-decoration:none;
+    font-weight:800;white-space:nowrap;background:#e7f6ef;border-radius:999px;
+    padding:1px 9px;font-size:12px}
+  a.wa::before{content:"";width:12px;height:12px;flex:none;border-radius:50%;
+    background:#25d366}
+  a.wa:hover{background:#d5efe3}
+  /* Nada de display:flex aquí: convertía el <b> y el enlace en items sueltos y
+     separaba la coma del nombre («Rei , coordinador»). */
+  .respaldo{background:#fff;border:1px solid var(--border);border-radius:10px;
+    box-shadow:var(--shadow);padding:10px 14px;margin-top:12px;font-size:13px;
+    color:var(--muted);line-height:1.9}
+  .respaldo b{color:var(--text)}
+  .respaldo a.wa{vertical-align:middle}
   a.mapa-link{color:var(--primary);text-decoration:none;font-weight:700;
     border-bottom:1px dotted rgba(15,76,129,.45)}
   a.mapa-link:hover{border-bottom-style:solid}
@@ -180,6 +191,7 @@
   <div id="app" style="display:none">
 
     <div class="stats" id="stats"></div>
+    <div class="respaldo" id="respaldo" style="display:none"></div>
 
     <div class="card" id="cardMias" style="display:none">
       <h2>Mis acompañamientos</h2>
@@ -253,6 +265,7 @@
       <div class="tick">✓</div>
       <h2>Listo, quedó apuntado</h2>
       <div class="cita" id="dlgCitaOk" style="margin-top:14px;text-align:left"></div>
+      <div class="respaldo" id="dlgRespaldo" style="margin-top:10px"></div>
       <div class="acc">
         <button class="btn btn-ghost btn-lg" id="dCerrar">Cerrar</button>
         <button class="btn btn-primary btn-lg" id="dIcs">Agregar a mi calendario</button>
@@ -265,8 +278,8 @@
 
 <!-- El ?v= lo sube publicar.sh en cada publicacion, para que ningun navegador
      siga sirviendo una copia vieja de sedes.js. -->
-<script src="sb-config.js?v=202609281656"></script>
-<script src="sedes.js?v=202609281656"></script>
+<script src="sb-config.js?v=202609281714"></script>
+<script src="sedes.js?v=202609281714"></script>
 <script>
 "use strict";
 
@@ -276,7 +289,7 @@ const LS_YO    = "sed_yo";           // nombre y equipo, para no volver a escrib
 const DUR_MIN  = 120;                // la aplicación dura unas 2 horas
 
 let VISITAS = [], APUNTADOS = {}, CUPO = 1, ABIERTA = null;
-let FACIS = {}, COORD = {};          // classid -> coordinadora ; nombre -> celular
+let FACIS = {}, COORD = {}, RESPALDO = null;   // aula -> coordinadora ; nombre -> celular
 let VISTA = "lista", MAPA = null, CAPA = null;
 const F = { loc:"", fecha:"", hora:"", q:"", sinNadie:false, pasadas:false };
 
@@ -362,6 +375,7 @@ async function recargarApuntados(){
   const d = await sedGet(TOKEN);
   APUNTADOS = d.apuntados || {};
   COORD = d.coordinadoras || {};
+  RESPALDO = d.respaldo || null;
   CUPO = d.cupo || 1;
 }
 
@@ -405,16 +419,41 @@ const lugarDe = v => [v.dir, v.barrio].filter(Boolean).join(" · ");
 // Bogotá tiene colegios distintos con el mismo nombre (hay dos «Guillermo León
 // Valencia», uno en Antonio Nariño y otro en Engativá) y buscar por nombre lleva
 // al equivocado. Con el punto exacto no hay confusión posible.
+// WhatsApp: el número va sin + ni espacios, y el saludo ya trae el contexto de
+// la visita para que la coordinadora no tenga que preguntar de qué se trata.
+function waLink(tel, texto){
+  const n = String(tel || "").replace(/\D/g, "");
+  if (!n) return "";
+  return "https://wa.me/" + n + (texto ? "?text=" + encodeURIComponent(texto) : "");
+}
+function waBoton(tel, texto, etiqueta){
+  const url = waLink(tel, texto);
+  if (!url) return "";
+  return `<a class="wa" href="${url}" target="_blank" rel="noopener"
+    title="Escribir por WhatsApp">${esc(etiqueta || tel)}</a>`;
+}
+
 // Quién coordina esa visita y cómo llamarla. Es lo que la persona necesita si
 // el día de la visita algo se cae. El celular sale de sed_coordinadoras; si
 // todavía no está cargado, se muestra solo el nombre.
 function coordHTML(v){
   if (!v.coord) return "";
   const tel = COORD[v.coord] || "";
-  const limpio = tel.replace(/[^0-9+]/g, "");
+  const saludo = "Hola " + v.coord + ", soy de la SED y acompaño la visita del " +
+    fechaLarga(v.fecha) + " a las " + hora12(v.hora) + " en " + titulo(v.colegio) + ".";
   return `<span class="coord">Coordina <b>${esc(v.coord)}</b>` +
-    (tel ? ` · <a class="tel-link" href="tel:${esc(limpio)}">${esc(tel)}</a>` : "") +
-    `</span>`;
+    (tel ? " · " + waBoton(tel, saludo, tel) : "") + `</span>`;
+}
+
+// A quién escribir si la coordinadora no contesta. Es el mismo para todas las
+// visitas, así que va una sola vez arriba y otra en el recibo, no en cada tarjeta.
+function respaldoHTML(){
+  if (!RESPALDO) return "";
+  return `¿No contesta? Escríbale a <b>${esc(RESPALDO.nombre)}</b>, ` +
+    `${esc((RESPALDO.nota || "coordinador de campo").toLowerCase())} · ` +
+    waBoton(RESPALDO.telefono, "Hola " + RESPALDO.nombre +
+      ", soy de la SED y acompaño una visita de la Encuesta de Clima de Aula.",
+      RESPALDO.telefono);
 }
 
 // Ojo: el celular de quien se apunta NO se muestra en ninguna tarjeta ni popup.
@@ -474,6 +513,10 @@ function pintar(){
     <div class="stat ${sinNadie ? "warn" : "ok"}"><b>${sinNadie}</b><span>Sin acompañante</span></div>
     <div class="stat ok"><b>${futuras.length - sinNadie}</b><span>Ya cubiertas</span></div>
     <div class="stat mine"><b>${mias}</b><span>Mías</span></div>`;
+
+  const barra = respaldoHTML();
+  $("#respaldo").style.display = barra ? "" : "none";
+  $("#respaldo").innerHTML = barra;
 
   const listaMias = VISITAS.filter(v => (APUNTADOS[v.id]||[]).some(g => g.mio) && v.fecha >= HOY);
   $("#cardMias").style.display = listaMias.length ? "" : "none";
@@ -566,6 +609,8 @@ async function confirmar(){
     if (MAPA) MAPA.closePopup();
     pintar();
     $("#dlgCitaOk").innerHTML = resumenCita(v);
+    $("#dlgRespaldo").innerHTML = respaldoHTML();
+    $("#dlgRespaldo").style.display = respaldoHTML() ? "" : "none";
     $("#dlgForm").style.display = "none";
     $("#dlgExito").style.display = "";
   }catch(e){
@@ -720,6 +765,7 @@ function ics(soloUna){
         ". Duración aproximada 2 horas." +
         (v.coord ? "\\n\\nCoordina: " + v.coord +
                    (COORD[v.coord] ? " · " + COORD[v.coord] : "") : "") +
+        (RESPALDO ? "\\nSi no contesta: " + RESPALDO.nombre + " · " + RESPALDO.telefono : "") +
         (v.lat ? "\\n\\nCómo llegar: https://www.google.com/maps/search/?api=1&query=" +
                  v.lat + "," + v.lon : ""),
       ...(v.lat ? ["GEO:" + v.lat + ";" + v.lon] : []),

@@ -39,8 +39,10 @@ en la ventana de confirmar y en el `.ics`.
 - **El nombre** viene de `clima_facilitadores` (aplicativo de reservas), por la llave
   `DANE|JORNADA|CLASE`. El curso a veces trae ceros a la izquierda: se quitan en los dos
   lados (`llaveAula`). Hoy hay cuatro: Ana María, Andrea, Daniela, Diana.
-- **El celular** no existía en ninguna fuente. Vive en la tabla nueva `sed_coordinadoras`
-  y se llena a mano:
+- **El celular** no existía en ninguna fuente. Vive en la tabla `sed_coordinadoras` y se
+  muestra como **botón de WhatsApp**: `wa.me/<solo dígitos>` con un saludo ya escrito que
+  incluye la fecha, la hora y el colegio, para que la coordinadora no tenga que preguntar de
+  qué se trata. Se llena a mano:
 
   ```bash
   cd ~/oscar-personal-apps && supabase db query --linked \
@@ -49,6 +51,11 @@ en la ventana de confirmar y en el `.ics`.
 
   Mientras esté vacío, la página muestra solo el nombre. Estos teléfonos **sí son públicos**:
   son el contacto de trabajo del rol, y mostrarlos es justo el punto.
+
+**Respaldo de campo.** La misma tabla guarda, con `rol = 'campo'`, a quién escribir si la
+coordinadora no contesta (hoy **Rei**). Como es el mismo para todas las visitas, sale **una
+sola vez** en una barra bajo las cifras y otra en el recibo — no repetido en las 86 tarjetas.
+También va en el `.ics`.
 
 ### La consola del equipo
 
