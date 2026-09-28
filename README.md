@@ -30,6 +30,38 @@ Puede cancelar cuando quiera.
 **Quién puede cancelar:** quien se apuntó desde ese mismo navegador (se guarda un token
 propio), o quien escriba el mismo nombre. Nadie puede tumbar la visita de otro.
 
+### La coordinadora de cada visita
+
+Cada visita muestra **quién la coordina y su celular**, para que la persona que se apunta
+sepa a quién llamar si el día se cae o pasa algo. Sale en la tarjeta, en el globo del mapa,
+en la ventana de confirmar y en el `.ics`.
+
+- **El nombre** viene de `clima_facilitadores` (aplicativo de reservas), por la llave
+  `DANE|JORNADA|CLASE`. El curso a veces trae ceros a la izquierda: se quitan en los dos
+  lados (`llaveAula`). Hoy hay cuatro: Ana María, Andrea, Daniela, Diana.
+- **El celular** no existía en ninguna fuente. Vive en la tabla nueva `sed_coordinadoras`
+  y se llena a mano:
+
+  ```bash
+  cd ~/oscar-personal-apps && supabase db query --linked \
+    "update sed_coordinadoras set telefono='3001234567' where nombre='Andrea'"
+  ```
+
+  Mientras esté vacío, la página muestra solo el nombre. Estos teléfonos **sí son públicos**:
+  son el contacto de trabajo del rol, y mostrarlos es justo el punto.
+
+### La consola del equipo
+
+`sed_agenda(clave)` entrega la agenda completa **con el celular de quien acompaña**. No puede
+salir por la anon key, así que va con clave compartida, igual que el `?tipo=contactos` de
+clima2026. La clave vive en `Encuesta/seguimiento_largo_plazo_r1r2/seguimiento/.sed_key`
+(modo 600, fuera de git) y en `sed_config.clave_agenda`; **este repo es público, así que la
+migración solo deja un marcador**.
+
+`consola.py` la baja en `bajar_acompanamiento_sed()` y pone en cada aula `sed_nombre`,
+`sed_equipo`, `sed_telefono` y `acompana_sed`; el calendario muestra
+«Acompaña de la SED: 300… · Nombre · Equipo» o «SIN acompañante de la SED».
+
 ### Nombres de colegio repetidos
 
 Bogotá tiene colegios **distintos con el mismo nombre**. Hay dos «Colegio Guillermo León

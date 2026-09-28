@@ -81,6 +81,10 @@
   .v .meta{font-size:12.5px;color:var(--muted);margin-top:2px}
   .v .meta .sep{color:var(--border);margin:0 5px}
   .v .dir{font-size:12.5px;color:var(--muted);margin-top:3px}
+  .coord{display:inline-block;font-size:12.5px;color:var(--muted);margin-top:4px}
+  .coord b{color:var(--text)}
+  a.tel-link{color:var(--primary);text-decoration:none;font-weight:800;white-space:nowrap}
+  a.tel-link:hover{text-decoration:underline}
   a.mapa-link{color:var(--primary);text-decoration:none;font-weight:700;
     border-bottom:1px dotted rgba(15,76,129,.45)}
   a.mapa-link:hover{border-bottom-style:solid}
@@ -114,7 +118,9 @@
     box-shadow:0 20px 50px rgba(0,0,0,.22);padding:22px 24px;max-height:92vh;overflow:auto}
   .dlg h2{font-size:18px;font-weight:800;margin-bottom:12px}
   .dlg .cita{background:var(--primary-soft);border-radius:10px;padding:12px 14px;margin-bottom:18px}
-  .dlg .cita b{display:block;font-size:15px}
+  /* solo el nombre del colegio va en su propia línea: el > evita que el <b> de
+     «Coordina <b>Andrea</b>» también se parta */
+  .dlg .cita > b{display:block;font-size:15px}
   .dlg .cita span{font-size:13px;color:var(--primary);font-weight:700}
   .dlg .cita .lugar{font-size:12.5px;color:var(--muted);font-weight:600;margin-top:3px}
   .dlg .campo{margin-bottom:14px}
@@ -259,8 +265,8 @@
 
 <!-- El ?v= lo sube publicar.sh en cada publicacion, para que ningun navegador
      siga sirviendo una copia vieja de sedes.js. -->
-<script src="sb-config.js?v=202609271754"></script>
-<script src="sedes.js?v=202609271754"></script>
+<script src="sb-config.js?v=202609281656"></script>
+<script src="sedes.js?v=202609281656"></script>
 <script>
 "use strict";
 
@@ -270,6 +276,7 @@ const LS_YO    = "sed_yo";           // nombre y equipo, para no volver a escrib
 const DUR_MIN  = 120;                // la aplicación dura unas 2 horas
 
 let VISITAS = [], APUNTADOS = {}, CUPO = 1, ABIERTA = null;
+let FACIS = {}, COORD = {};          // classid -> coordinadora ; nombre -> celular
 let VISTA = "lista", MAPA = null, CAPA = null;
 const F = { loc:"", fecha:"", hora:"", q:"", sinNadie:false, pasadas:false };
 
@@ -343,7 +350,8 @@ function construirVisitas(details){
         jornada: v.jornada, dane: v.dane,
         localidad: v.localidad || sede.loc || "",
         dir: sede.dir || "", barrio: sede.barrio || "",
-        lat: sede.lat || null, lon: sede.lon || null
+        lat: sede.lat || null, lon: sede.lon || null,
+        coord: FACIS[llaveAula(v.dane, v.jornada, v.clase)] || ""
       });
     }
   }
@@ -353,7 +361,25 @@ function construirVisitas(details){
 async function recargarApuntados(){
   const d = await sedGet(TOKEN);
   APUNTADOS = d.apuntados || {};
+  COORD = d.coordinadoras || {};
   CUPO = d.cupo || 1;
+}
+
+// El mapa de coordinadoras viene del aplicativo de reservas, con llave
+// DANE|JORNADA|CLASE. El curso a veces trae ceros a la izquierda y a veces no,
+// así que se quitan en los dos lados.
+function llaveAula(dane, jornada, clase){
+  return [String(dane||"").trim(),
+          String(jornada||"").trim().toUpperCase(),
+          String(clase||"").trim().replace(/^0+/, "") || "0"].join("|");
+}
+function normalizarFacis(mapa){
+  const out = {};
+  for (const k of Object.keys(mapa || {})){
+    const [d, j, c] = k.split("|");
+    out[llaveAula(d, j, c)] = mapa[k];
+  }
+  return out;
 }
 
 /* ----------------------------------------------------------------- filtros */
@@ -379,6 +405,18 @@ const lugarDe = v => [v.dir, v.barrio].filter(Boolean).join(" · ");
 // Bogotá tiene colegios distintos con el mismo nombre (hay dos «Guillermo León
 // Valencia», uno en Antonio Nariño y otro en Engativá) y buscar por nombre lleva
 // al equivocado. Con el punto exacto no hay confusión posible.
+// Quién coordina esa visita y cómo llamarla. Es lo que la persona necesita si
+// el día de la visita algo se cae. El celular sale de sed_coordinadoras; si
+// todavía no está cargado, se muestra solo el nombre.
+function coordHTML(v){
+  if (!v.coord) return "";
+  const tel = COORD[v.coord] || "";
+  const limpio = tel.replace(/[^0-9+]/g, "");
+  return `<span class="coord">Coordina <b>${esc(v.coord)}</b>` +
+    (tel ? ` · <a class="tel-link" href="tel:${esc(limpio)}">${esc(tel)}</a>` : "") +
+    `</span>`;
+}
+
 // Ojo: el celular de quien se apunta NO se muestra en ninguna tarjeta ni popup.
 // La página es pública y un número personal no puede quedar a la vista de
 // cualquiera con el enlace. Sale solo por exportar.sh.
@@ -419,6 +457,7 @@ function tarjeta(v){
           ? '<span class="sep">|</span>Sede ' + esc(titulo(v.sedeNom)) : ""}${
         v.clase ? '<span class="sep">|</span>Curso ' + esc(v.clase) : ""}</div>
       ${dir ? `<div class="dir">${dir}</div>` : ""}
+      ${coordHTML(v) ? `<div>${coordHTML(v)}</div>` : ""}
       <div class="acc">${mia ? '<span class="tag mia">Usted acompaña esta visita</span>' : ""}${
         libre && !pasada ? '<span class="tag libre">Sin acompañante</span>' : ""}${quienes}</div>
     </div>
@@ -489,7 +528,8 @@ function resumenCita(v){
   const dir = dirHTML(v);
   return `<b>${esc(titulo(v.colegio))}</b>
     <span>${esc(mayus1(fechaLarga(v.fecha)))} · ${esc(hora12(v.hora))}</span>
-    <div class="lugar">${esc(titulo(v.localidad))}${dir ? " · " + dir : ""}</div>`;
+    <div class="lugar">${esc(titulo(v.localidad))}${dir ? " · " + dir : ""}</div>
+    ${coordHTML(v) ? `<div class="lugar">${coordHTML(v)}</div>` : ""}`;
 }
 function abrir(id){
   const v = VISITAS.find(x => x.id === id); if (!v) return;
@@ -584,7 +624,8 @@ function popup(grupo){
       <small>${esc(mayus1(fechaLarga(v.fecha)))}</small></div>${acc}</div>`;
   }).join("");
   return `<div class="pop-col">${esc(titulo(v0.colegio))}</div>
-    <div class="pop-dir">${esc(titulo(v0.localidad))}${dirHTML(v0) ? " · " + dirHTML(v0) : ""}</div>
+    <div class="pop-dir">${esc(titulo(v0.localidad))}${dirHTML(v0) ? " · " + dirHTML(v0) : ""}${
+      coordHTML(v0) ? "<br>" + coordHTML(v0) : ""}</div>
     ${filas}`;
 }
 
@@ -677,6 +718,8 @@ function ics(soloUna){
       "LOCATION:" + lugar.replace(/,/g,"\\,"),
       "DESCRIPTION:Jornada " + (v.jornada||"") + ". Curso " + (v.clase||"") +
         ". Duración aproximada 2 horas." +
+        (v.coord ? "\\n\\nCoordina: " + v.coord +
+                   (COORD[v.coord] ? " · " + COORD[v.coord] : "") : "") +
         (v.lat ? "\\n\\nCómo llegar: https://www.google.com/maps/search/?api=1&query=" +
                  v.lat + "," + v.lon : ""),
       ...(v.lat ? ["GEO:" + v.lat + ";" + v.lon] : []),
@@ -735,6 +778,7 @@ function conectar(){
   conectar();
   try{
     const [agenda] = await Promise.all([ traerVisitas(), recargarApuntados() ]);
+    FACIS = normalizarFacis(agenda.facilitadores);
     VISITAS = construirVisitas(agenda.details || {});
     llenarFiltros();
     $("#cargando").style.display = "none";
