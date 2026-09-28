@@ -278,8 +278,8 @@
 
 <!-- El ?v= lo sube publicar.sh en cada publicacion, para que ningun navegador
      siga sirviendo una copia vieja de sedes.js. -->
-<script src="sb-config.js?v=202609281714"></script>
-<script src="sedes.js?v=202609281714"></script>
+<script src="sb-config.js?v=202609281836"></script>
+<script src="sedes.js?v=202609281836"></script>
 <script>
 "use strict";
 
@@ -358,7 +358,9 @@ function construirVisitas(details){
       if (esExtra(v)) continue;                 // solo visitas de seguimiento
       const sede = (typeof SEDES !== "undefined" ? SEDES[claveSede(v)] : null) || {};
       out.push({
-        id: `${slot}|${v.dane}|${v.clase}`, slot, fecha, hora,
+        // El id identifica el AULA, no el horario: si el colegio reprograma, el apuntado
+        // de la SED sigue a la visita. Con la fecha adentro se quedaba huérfano (28-sep-2026).
+        id: llaveAula(v.dane, v.jornada, v.clase), slot, fecha, hora,
         colegio: v.colegio, sedeNom: v.sede, clase: v.clase,
         jornada: v.jornada, dane: v.dane,
         localidad: v.localidad || sede.loc || "",
