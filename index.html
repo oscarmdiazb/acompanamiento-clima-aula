@@ -249,7 +249,7 @@
       </div>
       <div class="campo">
         <label for="dEquipo">Equipo</label>
-        <input id="dEquipo" type="text" placeholder="Equipo de Convivencia Escolar">
+        <select id="dEquipo"><option value="">Escoja su equipo…</option></select>
       </div>
       <div class="campo">
         <label for="dTel">Celular de contacto</label>
@@ -278,8 +278,8 @@
 
 <!-- El ?v= lo sube publicar.sh en cada publicacion, para que ningun navegador
      siga sirviendo una copia vieja de sedes.js. -->
-<script src="sb-config.js?v=202609281836"></script>
-<script src="sedes.js?v=202609281836"></script>
+<script src="sb-config.js?v=202609291726"></script>
+<script src="sedes.js?v=202609291726"></script>
 <script>
 "use strict";
 
@@ -290,6 +290,7 @@ const DUR_MIN  = 120;                // la aplicación dura unas 2 horas
 
 let VISITAS = [], APUNTADOS = {}, CUPO = 1, ABIERTA = null;
 let FACIS = {}, COORD = {}, RESPALDO = null;   // aula -> coordinadora ; nombre -> celular
+let EQUIPOS = [];                             // lista cerrada, viene de sed_config
 let VISTA = "lista", MAPA = null, CAPA = null;
 const F = { loc:"", fecha:"", hora:"", q:"", sinNadie:false, pasadas:false };
 
@@ -378,7 +379,18 @@ async function recargarApuntados(){
   APUNTADOS = d.apuntados || {};
   COORD = d.coordinadoras || {};
   RESPALDO = d.respaldo || null;
+  EQUIPOS = d.equipos || [];
+  llenarEquipos();
   CUPO = d.cupo || 1;
+}
+
+// El equipo es lista cerrada, no texto libre: con 32 personas apuntadas ya
+// había diez maneras de escribir dos equipos y no se podía agrupar nada.
+function llenarEquipos(){
+  const sel = $("#dEquipo"), antes = sel.value;
+  sel.innerHTML = '<option value="">Escoja su equipo…</option>' +
+    EQUIPOS.map(e => `<option value="${esc(e)}">${esc(e)}</option>`).join("");
+  if (EQUIPOS.includes(antes)) sel.value = antes;
 }
 
 // El mapa de coordinadoras viene del aplicativo de reservas, con llave
@@ -581,7 +593,7 @@ function abrir(id){
   ABIERTA = v;
   $("#dlgCita").innerHTML = resumenCita(v);
   $("#dNombre").value = (YO && YO.nombre) || "";
-  $("#dEquipo").value = (YO && YO.equipo) || "";
+  $("#dEquipo").value = (YO && EQUIPOS.includes(YO.equipo)) ? YO.equipo : "";
   $("#dTel").value    = (YO && YO.telefono) || "";
   $("#dlgMsg").innerHTML = "";
   $("#dlgForm").style.display = "";

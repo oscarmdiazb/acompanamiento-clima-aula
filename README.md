@@ -30,6 +30,53 @@ Puede cancelar cuando quiera.
 **Quién puede cancelar:** quien se apuntó desde ese mismo navegador (se guarda un token
 propio), o quien escriba el mismo nombre. Nadie puede tumbar la visita de otro.
 
+### El equipo es lista cerrada
+
+La SED fijó cinco equipos y la página los ofrece en un desplegable; el servidor **exige** que
+el valor sea uno de ellos:
+
+`Promoción y Prevención` · `Aulas con Emoción` · `Atención y Seguimiento` · `Entornos` ·
+`Monitoreo y Evaluación`
+
+La lista vive en `sed_config.equipos` (JSON), así que agregar o quitar un equipo es una línea
+y no toca la página:
+
+```bash
+cd ~/oscar-personal-apps && supabase db query --linked \
+  "update sed_config set valor = valor::jsonb || '[\"Equipo nuevo\"]' where clave='equipos'"
+```
+
+**Por qué.** Con 32 personas apuntadas ya había **diez** maneras de escribir dos equipos
+(«PyP», «promoción y prevención», «Promoción y Prevención OCE»…). Lo ya registrado se
+normalizó; lo que escribió cada quien queda en la columna `equipo_raw`. Cinco filas decían
+«Equipo Oficina para la Convivencia Escolar» —que es toda la oficina, no uno de los cinco
+equipos— y quedaron como **`Sin definir`**: hay que preguntarles, no adivinar. Salen así en
+el tablero.
+
+### El tablero de control (Excel)
+
+```bash
+cd "acompanamiento-sed-2026" && python3 tablero.py
+```
+
+Escribe `salidas/seguimiento_acompanamiento_<fecha>.xlsx` con cuatro hojas:
+
+| Hoja | Para qué |
+|---|---|
+| **Resumen** | cifras del día y cuántas visitas tomó cada equipo |
+| **Faltan** | las visitas sin acompañante, por fecha — la lista de trabajo |
+| **Por colegio** | una fila por IE: cuántas visitas, cuántas cubiertas, quién va, de qué equipo |
+| **Por visita** | el detalle completo, con el celular de quien acompaña |
+
+⚠ El archivo **lleva nombres y celulares**; la página no. Compártalo con cuidado.
+
+Una visita pasada sin acompañante sale como **«Ya pasó»**, no como «FALTA»: es una cita
+perdida, no una tarea pendiente, y pintarla de ámbar hacía pensar que aún se podía cubrir.
+
+**La llave de una visita es el aula (`DANE|JORNADA|CURSO`), no la fecha.** Si el colegio
+corre la visita de día, el acompañante se va con ella. `tablero.py` usa la misma
+`llave_aula()` que la página; cruzar por fecha da cero coincidencias.
+
 ### La coordinadora de cada visita
 
 Cada visita muestra **quién la coordina y su celular**, para que la persona que se apunta
