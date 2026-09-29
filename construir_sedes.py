@@ -1,14 +1,32 @@
 #!/usr/bin/env python3
-"""Construye sedes.js: direccion + barrio + telefono de cada sede visitada.
+"""Construye sedes.js: dirección, barrio y coordenadas de cada sede visitada.
 
 Fuente: directorio oficial de sedes de la SED
   data/final/SIMAT/4.-DIR-31-MAR-2025_01042025.csv
-Cruce:  DANE12 del establecimiento + nombre de la sede (normalizado).
 
-Salida: sedes.js  ->  const SEDES = { "<dane12>|<sede normalizada>": {dir, barrio, tel}, ... }
-No lleva ningun dato de estudiantes.
+CÓMO SE CRUZA — y por qué importa
+---------------------------------
+El `dane` de la agenda tiene **14 dígitos**: los 12 primeros son el DANE del
+ESTABLECIMIENTO y los 2 últimos el **consecutivo de la sede**. Por ejemplo
+`11100107595702` = establecimiento `111001075957` (Colegio San Carlos), sede
+número **2** (SAN CARLOS). Cruzar por esos dos campos es exacto.
+
+La versión anterior no sabía esto: buscaba el 14 dígitos como si fuera el DANE
+del establecimiento, no encontraba nada, y caía en un respaldo que buscaba el
+NOMBRE DE LA SEDE en toda Bogotá. Como los nombres se repiten, tres colegios
+salieron publicados con la dirección de otro colegio al otro lado de la ciudad
+(San Carlos con una dirección de Usaquén, José Martí con una de Bosa). Gente de
+la SED iba a viajar a la dirección equivocada.
+
+Por eso ahora, además del cruce exacto:
+  · los respaldos NUNCA salen del mismo establecimiento, y
+  · toda coincidencia se descarta si la LOCALIDAD no es la misma que la de la
+    visita. Es barato y habría atajado los tres errores.
+
+Salida: sedes.js  ->  const SEDES = { "<dane de la agenda>": {dir, barrio, loc, tel, lat, lon} }
+No lleva ningún dato de estudiantes.
 """
-import csv, json, re, sys, unicodedata, urllib.request
+import csv, json, re, unicodedata, urllib.request
 from pathlib import Path
 
 RAIZ = Path(__file__).resolve().parents[1]
@@ -29,27 +47,25 @@ def norm(s):
 
 def visitas():
     req = urllib.request.Request(API, headers={"apikey": ANON, "Authorization": "Bearer " + ANON})
-    d = json.load(urllib.request.urlopen(req, timeout=30))
-    out = []
-    for slot, lista in d.get("details", {}).items():
-        for v in lista:
-            out.append(v)
-    return out
+    d = json.load(urllib.request.urlopen(req, timeout=60))
+    return [v for lista in (d.get("details") or {}).values() for v in lista]
 
 
-def main():
-    # directorio -> por establecimiento
-    por_est, por_nombre, por_colegio = {}, {}, {}
+def leer_directorio():
+    """(por_sede, por_est, por_colegio) — todo con la localidad, para poder verificar."""
+    por_sede, por_est, por_colegio = {}, {}, {}
     with open(DIR_CSV, encoding="utf-8") as f:
         for r in csv.DictReader(f):
+            direccion = (r.get("sede_direccion") or "").strip()
+            if not direccion:
+                continue
             info = {
-                "dir": (r.get("sede_direccion") or "").strip(),
+                "dir": direccion,
                 "barrio": (r.get("barriogeo") or "").strip().title(),
                 "tel": (r.get("telefono") or "").strip(),
                 "loc": (r.get("nombre_localidad") or "").strip(),
             }
-            # Coordenadas de la sede, para el mapa. Solo se guardan si caen dentro
-            # de Bogota; el directorio trae algunas en cero o cambiadas de orden.
+            # Coordenadas, solo si caen dentro de Bogotá: el archivo trae ceros.
             try:
                 lat = float((r.get("sede_latitud") or "").replace(",", "."))
                 lon = float((r.get("sede_longitud") or "").replace(",", "."))
@@ -57,62 +73,86 @@ def main():
                     info["lat"], info["lon"] = round(lat, 6), round(lon, 6)
             except ValueError:
                 pass
-            if not info["dir"]:
-                continue
-            est = (r.get("dane12_establecimiento_educativo") or "").strip()
-            sede = norm(r.get("nombre_sede_educativa"))
-            por_est.setdefault(est, {})[sede] = info
-            por_nombre.setdefault(sede, info)
-            # sede principal del establecimiento, para cruzar por nombre de colegio
-            nom_est = norm(r.get("nombre_establecimiento_educativo"))
-            if nom_est and ((r.get("ordendesede") or "").strip() in ("1", "01")
-                            or nom_est not in por_colegio):
-                por_colegio.setdefault(nom_est, info)
 
-    sedes, sin = {}, []
+            est = (r.get("dane12_establecimiento_educativo") or "").strip()
+            try:
+                consec = int((r.get("consecutivo") or "0").strip())
+            except ValueError:
+                consec = 0
+            por_sede[(est, consec)] = info
+            por_est.setdefault(est, {})[norm(r.get("nombre_sede_educativa"))] = info
+            nom = norm(r.get("nombre_establecimiento_educativo"))
+            if nom and (consec == 1 or nom not in por_colegio):
+                por_colegio[nom] = info
+    return por_sede, por_est, por_colegio
+
+
+def buscar(v, por_sede, por_est, por_colegio):
+    """Devuelve (info, cómo_se_encontró) o (None, motivo)."""
+    dane = str(v.get("dane") or "").strip()
+    sede = norm(v.get("sede"))
+
+    if dane.startswith("EXTRA"):
+        # Filas sintéticas del operativo: no traen DANE real. Solo queda el nombre
+        # del colegio, y con la localidad no se puede verificar (viene «EXTRA»).
+        nom = norm(re.sub(r"^\s*R3\s*[·.-]\s*", "", v.get("colegio") or ""))
+        return (por_colegio.get(nom), "nombre de colegio (fila sintética)")
+
+    est, consec = dane[:12], dane[12:]
+    if consec.isdigit():
+        i = por_sede.get((est, int(consec)))
+        if i:
+            return i, "DANE de establecimiento + consecutivo de sede"
+    i = (por_est.get(est) or {}).get(sede)
+    if i:
+        return i, "nombre de sede dentro del mismo establecimiento"
+    cand = por_est.get(est) or {}
+    if len(cand) == 1:
+        return next(iter(cand.values())), "único sede del establecimiento"
+    i = por_sede.get((est, 1))
+    if i:
+        return i, "sede principal del establecimiento"
+    return None, f"el establecimiento {est} no está en el directorio"
+
+
+def main():
+    por_sede, por_est, por_colegio = leer_directorio()
+    sedes, sin, descartadas = {}, [], []
+
     for v in visitas():
-        dane, sede = (v.get("dane") or "").strip(), norm(v.get("sede"))
-        # Las filas sinteticas del operativo (EXTRA, EXTRA-R3, EXTRA-R3REV) no traen
-        # una sede real: su campo "sede" es una nota. Se cruzan por nombre de colegio.
-        extra = dane.startswith("EXTRA")
-        clave = f"R3|{norm(v.get('colegio'))}" if extra else f"{dane}|{sede}"
-        if clave in sedes:
+        dane = str(v.get("dane") or "").strip()
+        if dane in sedes:
             continue
-        cand = {} if extra else por_est.get(dane, {})
-        info = cand.get(sede)
-        if info is None and len(cand) == 1:          # una sola sede: no hay ambiguedad
-            info = next(iter(cand.values()))
-        if info is None and not extra:
-            info = por_nombre.get(sede)               # por nombre de sede
-        if info is None:
-            # Se cruza por el nombre del colegio, quitando el prefijo "R3 · ".
-            nom = norm(re.sub(r"^\s*R3\s*[·.-]\s*", "", v.get("colegio") or ""))
-            info = por_colegio.get(nom) or por_nombre.get(nom)
-            if info is None and len(nom) >= 8:
-                # "CULTURA POPULAR" vs "DE CULTURA POPULAR": se acepta la coincidencia
-                # parcial SOLO si un unico colegio del directorio la cumple.
-                cs = [k for k in por_colegio if nom in k or k in nom]
-                if len(cs) == 1:
-                    info = por_colegio[cs[0]]
-        if info:
-            sedes[clave] = info
-        else:
-            sin.append((v.get("colegio"), v.get("sede"), dane))
+        info, como = buscar(v, por_sede, por_est, por_colegio)
+        if not info:
+            sin.append((v.get("colegio"), v.get("sede"), dane, como))
+            continue
+        # Guardia de localidad: si no coinciden, la dirección es de otro colegio.
+        loc_v = norm(v.get("localidad"))
+        if loc_v and loc_v != "EXTRA" and norm(info["loc"]) != loc_v:
+            descartadas.append((v.get("colegio"), dane, v.get("localidad"), info["loc"], como))
+            continue
+        sedes[dane] = info
 
     SALIDA.write_text(
-        "// sedes.js — direccion y barrio de cada sede visitada.\n"
-        "// Generado por construir_sedes.py desde el directorio oficial de sedes de la SED\n"
-        "// (data/final/SIMAT/4.-DIR-31-MAR-2025_01042025.csv). No contiene datos de estudiantes.\n"
-        "// Clave: \"<dane12 del establecimiento>|<nombre de sede normalizado>\".\n"
+        "// sedes.js — dirección, barrio y coordenadas de cada sede visitada.\n"
+        "// Generado por construir_sedes.py desde el directorio oficial de sedes de la SED.\n"
+        "// La llave es el `dane` tal como viene en la agenda (14 dígitos: 12 del\n"
+        "// establecimiento + 2 del consecutivo de la sede). No lleva datos de estudiantes.\n"
         "const SEDES = " + json.dumps(sedes, ensure_ascii=False, indent=1, sort_keys=True) + ";\n",
         encoding="utf-8")
 
-    con_coord = sum(1 for v in sedes.values() if "lat" in v)
-    print(f"sedes con direccion: {len(sedes)}")
-    print(f"sedes con coordenadas: {con_coord}")
-    print(f"sin direccion:       {len(sin)}")
-    for c in sin[:15]:
-        print("   -", c)
+    print(f"sedes con dirección:   {len(sedes)}")
+    print(f"con coordenadas:       {sum(1 for x in sedes.values() if 'lat' in x)}")
+    if descartadas:
+        print(f"\n⛔ DESCARTADAS por localidad distinta ({len(descartadas)}) — "
+              f"habrían mandado a la gente al colegio equivocado:")
+        for col, d, lv, ld, como in descartadas:
+            print(f"   {col}  ({d})  visita dice {lv} · directorio dice {ld}  [{como}]")
+    if sin:
+        print(f"\nsin dirección ({len(sin)}):")
+        for col, sede, d, motivo in sin:
+            print(f"   {col} / {sede} ({d}) — {motivo}")
 
 
 if __name__ == "__main__":

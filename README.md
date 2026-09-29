@@ -116,6 +116,36 @@ migración solo deja un marcador**.
 `sed_equipo`, `sed_telefono` y `acompana_sed`; el calendario muestra
 «Acompaña de la SED: 300… · Nombre · Equipo» o «SIN acompañante de la SED».
 
+### Cómo se cruza la dirección · **leer antes de tocar `construir_sedes.py`**
+
+El `dane` de la agenda tiene **14 dígitos**: los **12 primeros** son el DANE del
+**establecimiento** y los **2 últimos** el **consecutivo de la sede**.
+
+```
+11100107595702  =  establecimiento 111001075957 (Colegio San Carlos)  +  sede 02 (SAN CARLOS)
+```
+
+Se cruza por esos dos campos contra `dane12_establecimiento_educativo` + `consecutivo`. Es
+exacto. `sedes.js` queda llaveado por el `dane` completo, tal cual.
+
+⚠ **La versión anterior no sabía esto.** Buscaba el 14 dígitos como si fuera el DANE del
+establecimiento, no encontraba nada, y caía en un respaldo que buscaba el **nombre de la
+sede en toda Bogotá**. Como los nombres se repiten, **cinco colegios salieron publicados con
+la dirección de otro colegio** al otro lado de la ciudad — San Carlos (Tunjuelito) con una
+dirección de Usaquén, José Martí (Rafael Uribe Uribe) con una de Bosa. Lo reportó una
+gestora de la SED el 29-sep-2026, después de tres días publicado. Gente iba a viajar a la
+dirección equivocada.
+
+Dos reglas que salieron de ahí y que **no hay que quitar**:
+
+1. **Los respaldos nunca salen del mismo establecimiento.** Si no cruza por consecutivo, se
+   intenta por nombre de sede *dentro del mismo DANE*, luego la sede principal *del mismo
+   DANE*. Nunca el nombre suelto.
+2. **Guardia de localidad.** Toda coincidencia se descarta si la localidad del directorio no
+   es la de la visita, y el script la imprime. Es barato y habría atajado los cinco.
+
+Hoy: **88 sedes, todas con dirección y coordenadas, cero descartadas**.
+
 ### Nombres de colegio repetidos
 
 Bogotá tiene colegios **distintos con el mismo nombre**. Hay dos «Colegio Guillermo León

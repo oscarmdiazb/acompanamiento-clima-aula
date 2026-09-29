@@ -278,8 +278,8 @@
 
 <!-- El ?v= lo sube publicar.sh en cada publicacion, para que ningun navegador
      siga sirviendo una copia vieja de sedes.js. -->
-<script src="sb-config.js?v=202609291726"></script>
-<script src="sedes.js?v=202609291726"></script>
+<script src="sb-config.js?v=202609292010"></script>
+<script src="sedes.js?v=202609292010"></script>
 <script>
 "use strict";
 
@@ -325,7 +325,11 @@ function norm(s){                                   // igual que construir_sedes
 // por EXTRA. Esta página es solo para las de seguimiento, así que se descartan.
 // Si algún día hay que volver a mostrarlas, es esta única línea.
 const esExtra = v => (v.dane || "").startsWith("EXTRA");
-const claveSede = v => esExtra(v) ? "R3|" + norm(v.colegio) : v.dane + "|" + norm(v.sede);
+// sedes.js va llaveado por el `dane` tal como viene en la agenda: 14 dígitos,
+// 12 del establecimiento + 2 del consecutivo de la sede. Antes la llave incluía
+// el nombre de la sede y, cuando no cruzaba, se buscaba ese nombre en toda
+// Bogotá: cinco colegios salieron con la dirección de otro colegio.
+const claveSede = v => String(v.dane || "").trim();
 const SIGLAS = ["IED","CED","CEDID","SED","OCE","IE"];
 function titulo(s){
   let t = (s||"").toLowerCase().replace(/(^|[\s(·\-\/])([a-záéíóúñ])/g,(m,a,b)=>a+b.toUpperCase());
