@@ -30,6 +30,17 @@ Puede cancelar cuando quiera.
 **Quién puede cancelar:** quien se apuntó desde ese mismo navegador (se guarda un token
 propio), o quien escriba el mismo nombre. Nadie puede tumbar la visita de otro.
 
+### Cuántas visitas acompaña cada equipo
+
+Arriba de la agenda, debajo de las cifras, hay una barra por equipo con cuántas visitas
+lleva y qué porcentaje del total es. Se cuentan las **visitas por venir**, igual que las
+cifras de arriba: las que ya pasaron no se reparten.
+
+Los cinco equipos oficiales salen **siempre**, aunque lleven cero — es justo lo que hay que
+ver. Cada uno tiene su color fijo, por su posición en `sed_config.equipos`. Un equipo que no
+esté en la lista sale en gris con ⚠ al final; hoy eso es solo `Sin definir`, las cinco filas
+que escribieron «Oficina para la Convivencia Escolar» cuando el campo era texto libre.
+
 ### El equipo es lista cerrada
 
 La SED fijó cinco equipos y la página los ofrece en un desplegable; el servidor **exige** que

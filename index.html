@@ -91,6 +91,24 @@
   a.wa:hover{background:#d5efe3}
   /* Nada de display:flex aquí: convertía el <b> y el enlace en items sueltos y
      separaba la coma del nombre («Rei , coordinador»). */
+  /* reparto por equipo */
+  .equipos{background:#fff;border:1px solid var(--border);border-radius:12px;
+    box-shadow:var(--shadow);padding:16px 18px;margin-top:12px}
+  .equipos h3{font-size:14px;font-weight:800;margin-bottom:2px}
+  .equipos .sub2{font-size:12.5px;color:var(--muted);margin-bottom:12px}
+  .eq-fila{display:grid;grid-template-columns:minmax(120px,1.1fr) 1fr auto;
+    gap:10px;align-items:center;padding:4px 0}
+  .eq-nom{font-size:13px;font-weight:700}
+  .eq-barra{background:#f1f3f5;border-radius:999px;height:12px;overflow:hidden}
+  .eq-barra span{display:block;height:100%;border-radius:999px;min-width:2px}
+  .eq-n{font-size:13.5px;font-weight:800;min-width:46px;text-align:right}
+  .eq-n small{font-weight:700;color:var(--muted);font-size:11.5px}
+  .eq-cero .eq-nom,.eq-cero .eq-n{color:var(--faint)}
+  @media(max-width:560px){
+    .eq-fila{grid-template-columns:1fr auto}
+    .eq-barra{grid-column:1 / -1;order:3}
+  }
+
   .respaldo{background:#fff;border:1px solid var(--border);border-radius:10px;
     box-shadow:var(--shadow);padding:10px 14px;margin-top:12px;font-size:13px;
     color:var(--muted);line-height:1.9}
@@ -191,6 +209,7 @@
   <div id="app" style="display:none">
 
     <div class="stats" id="stats"></div>
+    <div class="equipos" id="equipos" style="display:none"></div>
     <div class="respaldo" id="respaldo" style="display:none"></div>
 
     <div class="card" id="cardMias" style="display:none">
@@ -278,8 +297,8 @@
 
 <!-- El ?v= lo sube publicar.sh en cada publicacion, para que ningun navegador
      siga sirviendo una copia vieja de sedes.js. -->
-<script src="sb-config.js?v=202609292010"></script>
-<script src="sedes.js?v=202609292010"></script>
+<script src="sb-config.js?v=202610011202"></script>
+<script src="sedes.js?v=202610011202"></script>
 <script>
 "use strict";
 
@@ -522,6 +541,43 @@ function tarjeta(v){
   </div>`;
 }
 
+// Cuántas visitas acompaña cada equipo. Se cuentan las visitas POR VENIR, igual
+// que las cifras de arriba: las que ya pasaron no se reparten, ya ocurrieron.
+const COLOR_EQUIPO = ["#0f4c81", "#059669", "#b45309", "#8b4ea6", "#0e7490"];
+function pintarEquipos(futuras){
+  const cuenta = {};
+  (EQUIPOS || []).forEach(e => { cuenta[e] = 0; });
+  futuras.forEach(v => (APUNTADOS[v.id] || []).forEach(g => {
+    const e = g.equipo || "Sin definir";
+    cuenta[e] = (cuenta[e] || 0) + 1;
+  }));
+
+  const filas = Object.keys(cuenta).map(e => [e, cuenta[e]]);
+  if (!filas.length) { $("#equipos").style.display = "none"; return; }
+  // los equipos de la lista primero, por cantidad; lo que no está en la lista al final
+  const oficiales = new Set(EQUIPOS || []);
+  filas.sort((a, b) => (oficiales.has(b[0]) - oficiales.has(a[0])) || (b[1] - a[1])
+                       || a[0].localeCompare(b[0]));
+  const tope = Math.max(1, ...filas.map(f => f[1]));
+  const total = filas.reduce((n, f) => n + f[1], 0);
+
+  $("#equipos").style.display = "";
+  $("#equipos").innerHTML =
+    `<h3>Visitas por equipo</h3>
+     <div class="sub2">${total} de ${futuras.length} visitas por venir ya tienen quién las acompañe.</div>` +
+    filas.map(([e, n], i) => {
+      const color = oficiales.has(e) ? COLOR_EQUIPO[(EQUIPOS || []).indexOf(e) % COLOR_EQUIPO.length]
+                                     : "#9ca3af";
+      const pct = total ? Math.round(n * 100 / total) : 0;
+      return `<div class="eq-fila ${n ? "" : "eq-cero"}">
+        <div class="eq-nom">${esc(e)}${oficiales.has(e) ? "" : " ⚠"}</div>
+        <div class="eq-barra"><span style="width:${Math.round(n * 100 / tope)}%;
+          background:${color}"></span></div>
+        <div class="eq-n">${n} <small>${pct}%</small></div>
+      </div>`;
+    }).join("");
+}
+
 function pintar(){
   const futuras  = VISITAS.filter(v => v.fecha >= HOY);
   const sinNadie = futuras.filter(v => !(APUNTADOS[v.id]||[]).length).length;
@@ -531,6 +587,8 @@ function pintar(){
     <div class="stat ${sinNadie ? "warn" : "ok"}"><b>${sinNadie}</b><span>Sin acompañante</span></div>
     <div class="stat ok"><b>${futuras.length - sinNadie}</b><span>Ya cubiertas</span></div>
     <div class="stat mine"><b>${mias}</b><span>Mías</span></div>`;
+
+  pintarEquipos(futuras);
 
   const barra = respaldoHTML();
   $("#respaldo").style.display = barra ? "" : "none";
