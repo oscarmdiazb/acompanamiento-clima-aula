@@ -33,8 +33,13 @@ propio), o quien escriba el mismo nombre. Nadie puede tumbar la visita de otro.
 ### Cuántas visitas acompaña cada equipo
 
 Arriba de la agenda, debajo de las cifras, hay una barra por equipo con cuántas visitas
-lleva y qué porcentaje del total es. Se cuentan las **visitas por venir**, igual que las
-cifras de arriba: las que ya pasaron no se reparten.
+lleva **en total** y qué porcentaje del total es. La barra se parte en dos tonos: el oscuro
+son las que **ya pasaron** y el claro las que están **por venir**, con los números exactos
+bajo el nombre.
+
+**Es el total a propósito.** La primera versión contaba solo las visitas futuras y escondía
+a quien ya había puesto el hombro: un equipo con 6 visitas hechas y 32 pendientes aparecía
+igual que uno que empezó ayer. Para repartir trabajo hay que ver lo que cada quien lleva.
 
 Los cinco equipos oficiales salen **siempre**, aunque lleven cero — es justo lo que hay que
 ver. Cada uno tiene su color fijo, por su posición en `sed_config.equipos`. Un equipo que no
