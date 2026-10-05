@@ -94,7 +94,14 @@
   /* reparto por equipo */
   .equipos{background:#fff;border:1px solid var(--border);border-radius:12px;
     box-shadow:var(--shadow);padding:16px 18px;margin-top:12px}
-  .equipos h3{font-size:14px;font-weight:800;margin-bottom:2px}
+  .eq-cab{display:flex;align-items:center;justify-content:space-between;gap:12px;
+    flex-wrap:wrap;margin-bottom:2px}
+  .equipos h3{font-size:14px;font-weight:800}
+  .eq-tabs{display:inline-flex;background:#f1f3f5;border-radius:9px;padding:3px;gap:3px}
+  .eq-tabs button{border:none;background:transparent;font-family:inherit;font-weight:800;
+    font-size:12.5px;padding:5px 12px;border-radius:7px;cursor:pointer;color:var(--muted)}
+  .eq-tabs button.on{background:#fff;color:var(--primary);box-shadow:var(--shadow)}
+  .eq-mas{margin-top:10px;text-align:center}
   .equipos .sub2{font-size:12.5px;color:var(--muted);margin-bottom:12px}
   .eq-fila{display:grid;grid-template-columns:minmax(120px,1.1fr) 1fr auto;
     gap:10px;align-items:center;padding:4px 0}
@@ -218,7 +225,16 @@
   <div id="app" style="display:none">
 
     <div class="stats" id="stats"></div>
-    <div class="equipos" id="equipos" style="display:none"></div>
+    <div class="equipos" id="equipos" style="display:none">
+      <div class="eq-cab">
+        <h3 id="eqTitulo">Visitas por equipo</h3>
+        <div class="eq-tabs">
+          <button id="eqPorEquipo" class="on">Por equipo</button>
+          <button id="eqPorPersona">Por persona</button>
+        </div>
+      </div>
+      <div id="eqCuerpo"></div>
+    </div>
     <div class="respaldo" id="respaldo" style="display:none"></div>
 
     <div class="card" id="cardMias" style="display:none">
@@ -306,8 +322,8 @@
 
 <!-- El ?v= lo sube publicar.sh en cada publicacion, para que ningun navegador
      siga sirviendo una copia vieja de sedes.js. -->
-<script src="sb-config.js?v=202610051837"></script>
-<script src="sedes.js?v=202610051837"></script>
+<script src="sb-config.js?v=202610051845"></script>
+<script src="sedes.js?v=202610051845"></script>
 <script>
 "use strict";
 
@@ -554,51 +570,77 @@ function tarjeta(v){
 // trabajo. La barra se parte en dos: lo que ya hicieron y lo que les queda.
 // Contar solo las futuras escondía a quien ya puso el hombro en septiembre.
 const COLOR_EQUIPO = ["#0f4c81", "#059669", "#b45309", "#8b4ea6", "#0e7490"];
-function pintarEquipos(){
-  const hechas = {}, porVenir = {};
-  (EQUIPOS || []).forEach(e => { hechas[e] = 0; porVenir[e] = 0; });
+let EQ_VISTA = "equipo", EQ_TODAS = false;
+const EQ_TOPE_PERSONAS = 12;      // las demás quedan tras «Ver todas»
+
+function colorEquipo(e){
+  const i = (EQUIPOS || []).indexOf(e);
+  return i < 0 ? "#9ca3af" : COLOR_EQUIPO[i % COLOR_EQUIPO.length];
+}
+
+// Agrupa los apuntados por equipo o por persona, partiendo cada cuenta en
+// «ya pasaron» y «por venir».
+function contar(porPersona){
+  const m = new Map();
+  const toca = (clave, extra) => {
+    if (!m.has(clave)) m.set(clave, Object.assign({ clave, h: 0, f: 0 }, extra));
+    return m.get(clave);
+  };
+  if (!porPersona) (EQUIPOS || []).forEach(e => toca(e, { equipo: e }));
   VISITAS.forEach(v => (APUNTADOS[v.id] || []).forEach(g => {
-    const e = g.equipo || "Sin definir";
-    const d = v.fecha < HOY ? hechas : porVenir;
-    d[e] = (d[e] || 0) + 1;
-    if (!(e in hechas))   hechas[e] = hechas[e] || 0;
-    if (!(e in porVenir)) porVenir[e] = porVenir[e] || 0;
+    const equipo = g.equipo || "Sin definir";
+    const r = toca(porPersona ? g.nombre : equipo, { equipo });
+    r[v.fecha < HOY ? "h" : "f"] += 1;
   }));
+  return [...m.values()].map(r => Object.assign(r, { n: r.h + r.f }));
+}
 
-  const nombres = [...new Set([...Object.keys(hechas), ...Object.keys(porVenir)])];
-  if (!nombres.length) { $("#equipos").style.display = "none"; return; }
+function pintarEquipos(){
+  const porPersona = EQ_VISTA === "persona";
+  let filas = contar(porPersona);
+  if (!filas.length) { $("#equipos").style.display = "none"; return; }
 
-  const filas = nombres.map(e => ({
-    e, h: hechas[e] || 0, f: porVenir[e] || 0, n: (hechas[e] || 0) + (porVenir[e] || 0) }));
-  // los equipos de la lista primero, por cantidad; lo que no está en la lista al final
   const oficiales = new Set(EQUIPOS || []);
-  filas.sort((a, b) => (oficiales.has(b.e) - oficiales.has(a.e)) || (b.n - a.n)
-                       || a.e.localeCompare(b.e));
-  const tope = Math.max(1, ...filas.map(f => f.n));
-  const total = filas.reduce((n, f) => n + f.n, 0);
+  if (porPersona) filas.sort((a, b) => b.n - a.n || a.clave.localeCompare(b.clave));
+  else filas.sort((a, b) => (oficiales.has(b.clave) - oficiales.has(a.clave))
+                            || (b.n - a.n) || a.clave.localeCompare(b.clave));
+
+  const total  = filas.reduce((n, f) => n + f.n, 0);
   const totalH = filas.reduce((n, f) => n + f.h, 0);
+  const tope   = Math.max(1, ...filas.map(f => f.n));
+  const ocultas = porPersona && !EQ_TODAS ? Math.max(0, filas.length - EQ_TOPE_PERSONAS) : 0;
+  const visibles = ocultas ? filas.slice(0, EQ_TOPE_PERSONAS) : filas;
 
   $("#equipos").style.display = "";
-  $("#equipos").innerHTML =
-    `<h3>Visitas por equipo</h3>
-     <div class="sub2">${total} de ${VISITAS.length} visitas tienen quién las acompañe:
-       ${totalH} ya hechas y ${total - totalH} por venir.</div>
+  $("#eqTitulo").textContent = porPersona ? "Visitas por persona" : "Visitas por equipo";
+  $("#eqPorEquipo").classList.toggle("on", !porPersona);
+  $("#eqPorPersona").classList.toggle("on", porPersona);
+
+  const w = x => (x * 100 / tope).toFixed(1) + "%";
+  $("#eqCuerpo").innerHTML =
+    `<div class="sub2">${total} de ${VISITAS.length} visitas tienen quién las acompañe:
+       ${totalH} ya hechas y ${total - totalH} por venir${
+       porPersona ? ` · ${filas.length} personas apuntadas` : ""}.</div>
      <div class="eq-clave"><span><i></i>Ya pasaron</span>
        <span class="futuro"><i></i>Por venir</span></div>` +
-    filas.map(({ e, h, f, n }) => {
-      const color = oficiales.has(e) ? COLOR_EQUIPO[(EQUIPOS || []).indexOf(e) % COLOR_EQUIPO.length]
-                                     : "#9ca3af";
+    visibles.map(({ clave, equipo, h, f, n }) => {
+      const color = colorEquipo(equipo);
+      const raro = !porPersona && !oficiales.has(clave);
       const pct = total ? Math.round(n * 100 / total) : 0;
-      const w = x => (x * 100 / tope).toFixed(1) + "%";
       return `<div class="eq-fila ${n ? "" : "eq-cero"}">
-        <div class="eq-nom">${esc(e)}${oficiales.has(e) ? "" : " ⚠"}
-          ${n ? `<small>${h} ya pasaron · ${f} por venir</small>` : ""}</div>
+        <div class="eq-nom">${esc(clave)}${raro ? " ⚠" : ""}
+          ${n ? `<small>${porPersona ? esc(equipo) + " · " : ""}${h} ya pasaron · ${f} por venir</small>` : ""}</div>
         <div class="eq-barra">${
           h ? `<span style="width:${w(h)};background:${color}"></span>` : ""}${
           f ? `<span style="width:${w(f)};background:${color};opacity:.35"></span>` : ""}</div>
         <div class="eq-n">${n} <small>${pct}%</small></div>
       </div>`;
-    }).join("");
+    }).join("") +
+    (ocultas ? `<div class="eq-mas"><button class="btn btn-ghost btn-sm" id="eqVerTodas">
+       Ver las ${filas.length} personas</button></div>` : "");
+
+  const btn = $("#eqVerTodas");
+  if (btn) btn.onclick = () => { EQ_TODAS = true; pintarEquipos(); };
 }
 
 function pintar(){
@@ -897,6 +939,9 @@ function conectar(){
     [chS, chP].forEach(c => c.classList.remove("on"));
     llenarHoras(); pintar();
   };
+
+  $("#eqPorEquipo").onclick  = () => { EQ_VISTA = "equipo";  pintarEquipos(); };
+  $("#eqPorPersona").onclick = () => { EQ_VISTA = "persona"; pintarEquipos(); };
 
   $("#vLista").onclick = () => cambiarVista("lista");
   $("#vMapa").onclick  = () => cambiarVista("mapa");

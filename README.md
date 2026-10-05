@@ -37,6 +37,24 @@ lleva **en total** y qué porcentaje del total es. La barra se parte en dos tono
 son las que **ya pasaron** y el claro las que están **por venir**, con los números exactos
 bajo el nombre.
 
+El bloque tiene dos pestañas: **Por equipo** y **Por persona**. La de personas ordena por
+cantidad, muestra el equipo de cada una bajo el nombre y arranca con las 12 primeras; el
+resto sale con «Ver las N personas» — con 39 apuntadas, listarlas todas de entrada empujaba
+la agenda fuera de la pantalla.
+
+⚠ **Los nombres se cuentan tal como la persona los escribió.** No se agrupan por parecido:
+«Wendy Hernadez» y «Wendy Hernandez» salen como dos. Agrupar por nombre normalizado sería
+adivinar, y «Tania V» puede ser Tania Rocio o Tania Moreno. Cuando aparezca un duplicado
+claro, se arregla en la base y las dos filas se juntan solas:
+
+```bash
+cd ~/oscar-personal-apps && supabase db query --linked \
+  "update sed_acompanamientos set nombre='Wendy Hernandez' where nombre='Wendy Hernadez'"
+```
+
+Importa más de lo que parece: la regla de «nadie en dos visitas a la misma hora» compara
+`lower(nombre)`, así que un nombre mal escrito también la esquiva.
+
 **Es el total a propósito.** La primera versión contaba solo las visitas futuras y escondía
 a quien ya había puesto el hombro: un equipo con 6 visitas hechas y 32 pendientes aparecía
 igual que uno que empezó ayer. Para repartir trabajo hay que ver lo que cada quien lleva.
