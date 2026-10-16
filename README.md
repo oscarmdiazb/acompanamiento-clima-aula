@@ -30,6 +30,22 @@ Puede cancelar cuando quiera.
 **Quién puede cancelar:** quien se apuntó desde ese mismo navegador (se guarda un token
 propio), o quien escriba el mismo nombre. Nadie puede tumbar la visita de otro.
 
+### Cambiar a la persona que acompaña (16-oct-2026)
+
+Cada visita con acompañante tiene el botón **«Cambiar persona»** (en la lista y en el mapa).
+Sirve cuando quien se apuntó no puede ir y va otra persona.
+
+- Desde el navegador de quien se apuntó: solo se escriben los datos de quien va.
+- Desde otro navegador: además se pide **el nombre de quien estaba**, igual que para
+  cancelar. Si no coincide, el servidor no deja.
+- Es una sola operación en el servidor (acción `cambiar` de `sed_post`): cancela la fila
+  vieja e inserta la nueva con el mismo candado. La visita **nunca queda libre** en el medio.
+- La visita queda como «mía» solo en el navegador de quien va a ir. Si alguien se la pasa
+  a otra persona, en su navegador deja de salir como suya.
+- `sed_log` la guarda como `cambiar`, con `detalle->>'antes'` = quién estaba.
+
+Migración: `supabase/migrations/20261016120000_cambiar_acompanante.sql`.
+
 ### Cuántas visitas acompaña cada equipo
 
 Arriba de la agenda, debajo de las cifras, hay una barra por equipo con cuántas visitas

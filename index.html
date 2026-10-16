@@ -125,11 +125,14 @@
     .eq-barra{grid-column:1 / -1;order:3}
   }
 
-  .respaldo{background:#fff;border:1px solid var(--border);border-radius:10px;
-    box-shadow:var(--shadow);padding:10px 14px;margin-top:12px;font-size:13px;
-    color:var(--muted);line-height:1.9}
-  .respaldo b{color:var(--text)}
-  .respaldo a.wa{vertical-align:middle}
+  /* Grande a propósito: en tamaño normal se perdía entre las cifras (16-oct-2026). */
+  .respaldo{background:#f1faf5;border:1px solid #bfe6cf;border-left:5px solid #25d366;
+    border-radius:12px;box-shadow:var(--shadow);padding:14px 18px;margin-top:14px;
+    font-size:16.5px;font-weight:600;color:var(--text);line-height:1.8}
+  .respaldo b{color:var(--text);font-weight:800}
+  .respaldo a.wa{vertical-align:middle;font-size:16px;padding:5px 14px;gap:7px}
+  .respaldo a.wa::before{width:15px;height:15px}
+  @media(max-width:560px){ .respaldo{font-size:15px} }
   a.mapa-link{color:var(--primary);text-decoration:none;font-weight:700;
     border-bottom:1px dotted rgba(15,76,129,.45)}
   a.mapa-link:hover{border-bottom-style:solid}
@@ -287,6 +290,12 @@
     <div id="dlgForm">
       <h2 id="dlgTitulo">Confirmar acompañamiento</h2>
       <div class="cita" id="dlgCita"></div>
+      <div class="campo" id="campoViejo" style="display:none">
+        <label for="dViejo">¿Quién estaba apuntado?</label>
+        <input id="dViejo" type="text" placeholder="Escriba el nombre tal como sale en la visita">
+      </div>
+      <p class="sub" id="dlgNueva" style="display:none;font-weight:800;color:var(--text);margin:4px 0 10px">
+        ¿Quién va a ir ahora?</p>
       <div class="campo">
         <label for="dNombre">Nombre completo</label>
         <input id="dNombre" type="text" placeholder="Ana María Rodríguez" autocomplete="name">
@@ -322,8 +331,8 @@
 
 <!-- El ?v= lo sube publicar.sh en cada publicacion, para que ningun navegador
      siga sirviendo una copia vieja de sedes.js. -->
-<script src="sb-config.js?v=202610051845"></script>
-<script src="sedes.js?v=202610051845"></script>
+<script src="sb-config.js?v=202610161725"></script>
+<script src="sedes.js?v=202610161725"></script>
 <script>
 "use strict";
 
@@ -542,10 +551,12 @@ function tarjeta(v){
     `<span class="tag ${g.mio ? "mia" : "ok"}">${esc(g.nombre)}${
       g.equipo ? " · " + esc(g.equipo) : ""}</span>`).join(" ");
 
+  const cambiar = `<button class="btn btn-ghost btn-sm" data-cambiar="${esc(v.id)}"
+    title="Otra persona va en lugar de quien está apuntado">Cambiar persona</button>`;
   let boton = "";
   if (pasada)     boton = "";
-  else if (mia)   boton = `<button class="btn btn-danger btn-sm" data-cancelar="${esc(v.id)}">Cancelar</button>`;
-  else if (lleno) boton = `<span class="tag ok">Ya tiene acompañante</span>`;
+  else if (mia)   boton = `<button class="btn btn-danger btn-sm" data-cancelar="${esc(v.id)}">Cancelar</button>` + cambiar;
+  else if (lleno) boton = `<span class="tag ok">Ya tiene acompañante</span>` + cambiar;
   else            boton = `<button class="btn btn-primary btn-sm" data-apuntar="${esc(v.id)}">Me apunto</button>`;
 
   const dir = dirHTML(v);
@@ -715,37 +726,76 @@ function resumenCita(v){
     <div class="lugar">${esc(titulo(v.localidad))}${dir ? " · " + dir : ""}</div>
     ${coordHTML(v) ? `<div class="lugar">${coordHTML(v)}</div>` : ""}`;
 }
-function abrir(id){
+// cambiar = otra persona va en lugar de quien está apuntado. Si la visita es de
+// este navegador no hace falta probar nada; si no, se pide el nombre de quien
+// estaba, igual que el servidor lo pide para cancelar.
+let CAMBIAR = false, MIA_ABIERTA = false;
+const mismoNombre = (a, b) => norm(a) !== "" && norm(a) === norm(b);
+
+function abrir(id, cambiar){
   const v = VISITAS.find(x => x.id === id); if (!v) return;
   ABIERTA = v;
-  $("#dlgCita").innerHTML = resumenCita(v);
-  $("#dNombre").value = (YO && YO.nombre) || "";
-  $("#dEquipo").value = (YO && EQUIPOS.includes(YO.equipo)) ? YO.equipo : "";
-  $("#dTel").value    = (YO && YO.telefono) || "";
+  CAMBIAR = !!cambiar;
+  MIA_ABIERTA = (APUNTADOS[v.id] || []).some(g => g.mio);
+  const actual = (APUNTADOS[v.id] || [])[0];
+  $("#dlgTitulo").textContent = CAMBIAR ? "Cambiar a la persona que acompaña"
+                                        : "Confirmar acompañamiento";
+  $("#dlgCita").innerHTML = resumenCita(v) + (CAMBIAR && actual
+    ? `<div class="lugar">Hoy acompaña <b>${esc(actual.nombre)}</b></div>` : "");
+  $("#campoViejo").style.display = CAMBIAR && !MIA_ABIERTA ? "" : "none";
+  $("#dlgNueva").style.display   = CAMBIAR ? "" : "none";
+  $("#dViejo").value = "";
+  // Si la visita es mía, el cambio es para pasársela a otra persona: los campos
+  // van vacíos. Si no es mía, lo normal es que yo vaya en su lugar: van mis datos.
+  const conMisDatos = !(CAMBIAR && MIA_ABIERTA);
+  $("#dNombre").value = (conMisDatos && YO && YO.nombre) || "";
+  $("#dEquipo").value = (conMisDatos && YO && EQUIPOS.includes(YO.equipo)) ? YO.equipo : "";
+  $("#dTel").value    = (conMisDatos && YO && YO.telefono) || "";
   $("#dlgMsg").innerHTML = "";
   $("#dlgForm").style.display = "";
   $("#dlgExito").style.display = "none";
   $("#fondo").hidden = false;
   setTimeout(() => {
-    const falta = ["#dNombre","#dEquipo","#dTel"].find(x => !$(x).value.trim());
+    const campos = ($("#campoViejo").style.display === "none" ? [] : ["#dViejo"])
+                     .concat(["#dNombre","#dEquipo","#dTel"]);
+    const falta = campos.find(x => !$(x).value.trim());
     $(falta || "#dConfirmar").focus();
   }, 60);
 }
-function cerrar(){ $("#fondo").hidden = true; ABIERTA = null; }
+function cerrar(){ $("#fondo").hidden = true; ABIERTA = null; CAMBIAR = false; }
 
 async function confirmar(){
   const v = ABIERTA; if (!v) return;
   const nombre = $("#dNombre").value.trim(), equipo = $("#dEquipo").value.trim();
   const telefono = $("#dTel").value.trim();
+  // ¿Quien va a ir es quien usa este navegador? Solo entonces la visita queda
+  // como «mía» aquí y se guardan sus datos para la próxima vez.
+  const esYo = !CAMBIAR || (YO ? mismoNombre(YO.nombre, nombre) : !MIA_ABIERTA);
   const b = $("#dConfirmar");
   b.disabled = true; b.textContent = "Confirmando…";
   try{
-    const r = await sedPost({ accion:"apuntar", token:TOKEN, nombre, equipo, telefono, visita_id:v.id,
-      fecha:v.fecha, hora:v.hora, colegio:v.colegio, sede:v.sedeNom,
-      localidad:v.localidad, jornada:v.jornada, clase:v.clase, dane:v.dane });
+    const base = { token:TOKEN, nombre, equipo, telefono, visita_id:v.id };
+    const r = CAMBIAR
+      ? await sedPost(Object.assign(base, { accion:"cambiar",
+          nombre_actual: $("#dViejo").value.trim(),
+          token_nuevo: esYo ? TOKEN : "otro-" + (crypto.randomUUID ? crypto.randomUUID()
+                                                 : Date.now() + Math.random().toString(36).slice(2)) }))
+      : await sedPost(Object.assign(base, { accion:"apuntar",
+          fecha:v.fecha, hora:v.hora, colegio:v.colegio, sede:v.sedeNom,
+          localidad:v.localidad, jornada:v.jornada, clase:v.clase, dane:v.dane }));
     if (!r.ok){ $("#dlgMsg").innerHTML = `<div class="aviso err">${esc(r.error)}</div>`; return; }
-    YO = { nombre, equipo, telefono };
-    try { localStorage.setItem(LS_YO, JSON.stringify(YO)); } catch (e) {}
+    if (esYo){
+      YO = { nombre, equipo, telefono };
+      try { localStorage.setItem(LS_YO, JSON.stringify(YO)); } catch (e) {}
+    }
+    if (CAMBIAR && !esYo){
+      // Se la pasó a otra persona: aquí no hay nada más que hacer.
+      await recargarApuntados();
+      if (MAPA) MAPA.closePopup();
+      pintar(); cerrar();
+      toast("Listo. Ahora acompaña " + nombre + ".");
+      return;
+    }
     await recargarApuntados();
     if (MAPA) MAPA.closePopup();
     pintar();
@@ -803,8 +853,10 @@ function popup(grupo){
     const mia = g.some(x => x.mio), pasada = v.fecha < HOY;
     let acc;
     if (pasada)            acc = '<span class="tag">Ya pasó</span>';
-    else if (mia)          acc = `<button class="btn btn-danger btn-sm" data-cancelar="${esc(v.id)}">Cancelar</button>`;
-    else if (g.length >= CUPO) acc = `<span class="tag ok">${esc(g[0].nombre)}</span>`;
+    else if (mia)          acc = `<span><button class="btn btn-danger btn-sm" data-cancelar="${esc(v.id)}">Cancelar</button>
+                                 <button class="btn btn-ghost btn-sm" data-cambiar="${esc(v.id)}">Cambiar</button></span>`;
+    else if (g.length >= CUPO) acc = `<span class="tag ok">${esc(g[0].nombre)}</span>
+                                 <button class="btn btn-ghost btn-sm" data-cambiar="${esc(v.id)}">Cambiar</button>`;
     else                   acc = `<button class="btn btn-primary btn-sm" data-apuntar="${esc(v.id)}">Me apunto</button>`;
     return `<div class="pop-v"><div class="cuando">${esc(hora12(v.hora))}
       <small>${esc(mayus1(fechaLarga(v.fecha)))}</small></div>${acc}</div>`;
@@ -841,6 +893,8 @@ async function pintarMapa(vis){
         b.onclick = () => abrir(b.dataset.apuntar));
       el.querySelectorAll("[data-cancelar]").forEach(b =>
         b.onclick = () => cancelar(b.dataset.cancelar));
+      el.querySelectorAll("[data-cambiar]").forEach(b =>
+        b.onclick = () => abrir(b.dataset.cambiar, true));
     });
   }
   if (CAPA) MAPA.removeLayer(CAPA);
@@ -961,6 +1015,7 @@ function conectar(){
   document.addEventListener("click", e => {
     const a = e.target.closest("[data-apuntar]");  if (a) return abrir(a.dataset.apuntar);
     const c = e.target.closest("[data-cancelar]"); if (c) return cancelar(c.dataset.cancelar);
+    const k = e.target.closest("[data-cambiar]");  if (k) return abrir(k.dataset.cambiar, true);
   });
 }
 
