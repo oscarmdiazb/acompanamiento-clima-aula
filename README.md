@@ -30,6 +30,18 @@ Puede cancelar cuando quiera.
 **Quién puede cancelar:** quien se apuntó desde ese mismo navegador (se guarda un token
 propio), o quien escriba el mismo nombre. Nadie puede tumbar la visita de otro.
 
+### Inscripciones cerradas: solo visitas acompañadas (16-oct-2026)
+
+La SED no va a tomar más visitas que las que ya tiene. La página muestra **solo las
+visitas con acompañante**: sin la cifra «Sin acompañante», sin el filtro «Solo las que
+no tienen a nadie», sin «Me apunto», y el texto de arriba ya no invita a apuntarse.
+Tampoco se puede **cancelar** (la visita desaparecería y nadie más la puede tomar): si
+alguien no puede ir, usa «Cambiar persona».
+
+Es una sola constante en `index.html`: `SOLO_ACOMPANADAS = true`. En `false` todo vuelve
+a como era. Las visitas sin acompañante **no se borran de ningún lado**: siguen en la
+agenda de reservas, en `huecos.sh`, en `tablero.py` y en la consola del equipo.
+
 ### Cambiar a la persona que acompaña (16-oct-2026)
 
 Cada visita con acompañante tiene el botón **«Cambiar persona»** (en la lista y en el mapa).

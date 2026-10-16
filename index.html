@@ -248,7 +248,7 @@
         <button class="btn btn-ghost btn-sm" id="btnIcs">Agregar a mi calendario</button></div>
     </div>
 
-    <div class="card">
+    <div class="card" id="cardFiltros">
       <h2>Escoja el día y la hora</h2>
       <p class="sub">Escoja un momento y abajo quedan los colegios de ese momento.
         Si los deja en «Todas», ve la agenda completa.</p>
@@ -331,8 +331,8 @@
 
 <!-- El ?v= lo sube publicar.sh en cada publicacion, para que ningun navegador
      siga sirviendo una copia vieja de sedes.js. -->
-<script src="sb-config.js?v=202610161725"></script>
-<script src="sedes.js?v=202610161725"></script>
+<script src="sb-config.js?v=202610161957"></script>
+<script src="sedes.js?v=202610161957"></script>
 <script>
 "use strict";
 
@@ -341,7 +341,13 @@ const LS_TOKEN = "sed_token";        // identifica este navegador, para poder ca
 const LS_YO    = "sed_yo";           // nombre y equipo, para no volver a escribirlos
 const DUR_MIN  = 120;                // la aplicación dura unas 2 horas
 
-let VISITAS = [], APUNTADOS = {}, CUPO = 1, ABIERTA = null;
+// La SED cerró su acompañamiento con las visitas que ya tomó (16-oct-2026): no va a
+// tomar más. La página muestra solo las visitas acompañadas, sin «faltan» ni
+// «sin acompañante». Las demás siguen en la agenda de reservas y en huecos.sh /
+// tablero.py, que no cambian. Para volver a abrir las inscripciones: false.
+const SOLO_ACOMPANADAS = true;
+
+let TODAS = [], VISITAS = [], APUNTADOS = {}, CUPO = 1, ABIERTA = null;
 let FACIS = {}, COORD = {}, RESPALDO = null;   // aula -> coordinadora ; nombre -> celular
 let EQUIPOS = [];                             // lista cerrada, viene de sed_config
 let VISTA = "lista", MAPA = null, CAPA = null;
@@ -439,6 +445,10 @@ async function recargarApuntados(){
   EQUIPOS = d.equipos || [];
   llenarEquipos();
   CUPO = d.cupo || 1;
+  aplicarCobertura();
+}
+function aplicarCobertura(){
+  VISITAS = SOLO_ACOMPANADAS ? TODAS.filter(v => (APUNTADOS[v.id] || []).length) : TODAS;
 }
 
 // El equipo es lista cerrada, no texto libre: con 32 personas apuntadas ya
@@ -555,7 +565,10 @@ function tarjeta(v){
     title="Otra persona va en lugar de quien está apuntado">Cambiar persona</button>`;
   let boton = "";
   if (pasada)     boton = "";
-  else if (mia)   boton = `<button class="btn btn-danger btn-sm" data-cancelar="${esc(v.id)}">Cancelar</button>` + cambiar;
+  // Con las inscripciones cerradas no se cancela: la visita quedaría sin nadie y nadie
+  // más la puede tomar. Si alguien no puede ir, se cambia la persona.
+  else if (mia)   boton = (SOLO_ACOMPANADAS ? "" :
+                    `<button class="btn btn-danger btn-sm" data-cancelar="${esc(v.id)}">Cancelar</button>`) + cambiar;
   else if (lleno) boton = `<span class="tag ok">Ya tiene acompañante</span>` + cambiar;
   else            boton = `<button class="btn btn-primary btn-sm" data-apuntar="${esc(v.id)}">Me apunto</button>`;
 
@@ -629,7 +642,8 @@ function pintarEquipos(){
 
   const w = x => (x * 100 / tope).toFixed(1) + "%";
   $("#eqCuerpo").innerHTML =
-    `<div class="sub2">${total} de ${VISITAS.length} visitas tienen quién las acompañe:
+    `<div class="sub2">${SOLO_ACOMPANADAS ? total + " visitas acompañadas"
+         : total + " de " + VISITAS.length + " visitas tienen quién las acompañe"}:
        ${totalH} ya hechas y ${total - totalH} por venir${
        porPersona ? ` · ${filas.length} personas apuntadas` : ""}.</div>
      <div class="eq-clave"><span><i></i>Ya pasaron</span>
@@ -658,7 +672,12 @@ function pintar(){
   const futuras  = VISITAS.filter(v => v.fecha >= HOY);
   const sinNadie = futuras.filter(v => !(APUNTADOS[v.id]||[]).length).length;
   const mias     = VISITAS.filter(v => (APUNTADOS[v.id]||[]).some(g => g.mio)).length;
-  $("#stats").innerHTML = `
+  if (SOLO_ACOMPANADAS) $("#stats").innerHTML = `
+    <div class="stat ok"><b>${VISITAS.length}</b><span>Visitas acompañadas</span></div>
+    <div class="stat"><b>${VISITAS.length - futuras.length}</b><span>Ya hechas</span></div>
+    <div class="stat"><b>${futuras.length}</b><span>Por venir</span></div>
+    <div class="stat mine"><b>${mias}</b><span>Mías</span></div>`;
+  else $("#stats").innerHTML = `
     <div class="stat"><b>${futuras.length}</b><span>Visitas por venir</span></div>
     <div class="stat ${sinNadie ? "warn" : "ok"}"><b>${sinNadie}</b><span>Sin acompañante</span></div>
     <div class="stat ok"><b>${futuras.length - sinNadie}</b><span>Ya cubiertas</span></div>
@@ -716,6 +735,16 @@ function llenarHoras(){
     hs.map(h => `<option value="${h}">${esc(hora12(h))}</option>`).join("");
   if (hs.includes(antes)) $("#fHora").value = antes;
   else { F.hora = ""; $("#fHora").value = ""; }
+}
+
+// Con las inscripciones cerradas, la página deja de invitar a apuntarse.
+function modoCerrado(){
+  $(".lead").textContent = "Esta es la agenda de las visitas de la Encuesta de Clima de " +
+    "Aula que acompaña la SED, con quién acompaña cada una y a quién llamar si algo cambia.";
+  $("#chSinNadie").style.display = "none";
+  $("#cardFiltros h2").textContent = "Buscar una visita";
+  $("#cardFiltros .sub").textContent = "Filtre por día, hora, localidad o colegio. " +
+    "Si los deja en «Todas», ve la agenda completa.";
 }
 
 /* ------------------------------------------- ventana: escoger y confirmar */
@@ -853,7 +882,7 @@ function popup(grupo){
     const mia = g.some(x => x.mio), pasada = v.fecha < HOY;
     let acc;
     if (pasada)            acc = '<span class="tag">Ya pasó</span>';
-    else if (mia)          acc = `<span><button class="btn btn-danger btn-sm" data-cancelar="${esc(v.id)}">Cancelar</button>
+    else if (mia)          acc = `<span>${SOLO_ACOMPANADAS ? "" : `<button class="btn btn-danger btn-sm" data-cancelar="${esc(v.id)}">Cancelar</button>`}
                                  <button class="btn btn-ghost btn-sm" data-cambiar="${esc(v.id)}">Cambiar</button></span>`;
     else if (g.length >= CUPO) acc = `<span class="tag ok">${esc(g[0].nombre)}</span>
                                  <button class="btn btn-ghost btn-sm" data-cambiar="${esc(v.id)}">Cambiar</button>`;
@@ -1021,10 +1050,12 @@ function conectar(){
 
 (async function(){
   conectar();
+  if (SOLO_ACOMPANADAS) modoCerrado();   // antes de cargar: que no se vea la invitación
   try{
     const [agenda] = await Promise.all([ traerVisitas(), recargarApuntados() ]);
     FACIS = normalizarFacis(agenda.facilitadores);
-    VISITAS = construirVisitas(agenda.details || {});
+    TODAS = construirVisitas(agenda.details || {});
+    aplicarCobertura();
     llenarFiltros();
     $("#cargando").style.display = "none";
     $("#app").style.display = "";
